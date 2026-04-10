@@ -44,7 +44,7 @@ const AppStyles = () => (
       margin:0;
       height:100%;
       overflow:hidden;
-      font-family:"Plus Jakarta Sans","DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      font-family:"Comfortaa","Quicksand",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
       color:var(--ink);
       -webkit-tap-highlight-color:transparent;
       background:
