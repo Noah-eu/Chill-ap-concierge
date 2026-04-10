@@ -229,7 +229,22 @@ const AppStyles = () => (
       touch-action:manipulation;
     }
     .headerInstallBtn:active{filter:brightness(.97);transform:translateY(1px)}
-    .headerCtaRow--solo .headerBookBtn{flex:1 1 100%}
+    .headerShareBtn{
+      flex:0 1 140px;
+      appearance:none;
+      min-height:46px;padding:12px 14px;border-radius:14px;
+      font-family:var(--font-app);
+      font-weight:700;font-size:.82rem;
+      color:var(--accent-2);
+      background:linear-gradient(180deg,#f6fdfb,#e8f7f4);
+      border:1px solid color-mix(in oklab,var(--accent),transparent 50%);
+      cursor:pointer;
+      touch-action:manipulation;
+      box-shadow:0 2px 8px rgba(13,148,136,.1);
+    }
+    .headerShareBtn:active{filter:brightness(.96);transform:translateY(1px)}
+    .headerCtaRow--solo .headerBookBtn{flex:1 1 200px}
+    .headerCtaRow--solo .headerShareBtn{flex:1 1 160px}
 
     .row{
       flex:1;
@@ -437,6 +452,39 @@ const AppStyles = () => (
     .menuGrid .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 24px color-mix(in oklab,var(--btn),transparent 50%)}
     .menuGrid .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
     .menuGrid .chipPrimary:disabled{transform:none;filter:none;opacity:.5}
+    .menuTileWrap{
+      position:relative;
+      width:100%;
+      min-width:0;
+      aspect-ratio:1;
+    }
+    .menuTileWrap .chipPrimary{
+      width:100%;
+      height:100%;
+      box-sizing:border-box;
+      padding:10px 32px 10px 8px;
+    }
+    .tileShareBtn{
+      position:absolute;top:7px;right:7px;z-index:4;
+      width:32px;height:32px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.95rem;line-height:1;padding:0;
+      border:1px solid color-mix(in oklab,white,black 12%);
+      background:rgba(255,255,255,.9);
+      color:var(--accent-2);
+      cursor:pointer;
+      box-shadow:0 2px 10px rgba(15,20,25,.2);
+      touch-action:manipulation;
+      font-family:var(--font-app);
+    }
+    .tileShareBtn:active{transform:scale(.93)}
+    @media (prefers-color-scheme: dark){
+      .tileShareBtn{
+        background:rgba(28,36,44,.94);
+        color:var(--teal-muted);
+        border-color:var(--border);
+      }
+    }
     .backBtn{
       appearance:none;
       font-family:var(--font-app);
@@ -667,7 +715,7 @@ const AppStyles = () => (
       .brandMvp{gap:12px}
       .brandLogo{width:52px;height:52px;border-radius:15px}
       .appHeader{padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:10px}
-      .headerInstallBtn{flex:1 1 140px}
+      .headerInstallBtn,.headerShareBtn{flex:1 1 130px}
     }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -1223,6 +1271,12 @@ const uxStrings = {
     ariaMenuSection: "Topics and shortcuts",
     ariaBreadcrumb: "Where you are",
     ariaSearchResults: "Search results",
+    shareSection: "Share link",
+    shareTitle: "Chill Concierge",
+    shareText: "Open this topic in the app:",
+    shareCopied: "Link copied to clipboard.",
+    shareFailed: "Copy this link manually:",
+    shareTileAria: "Share link to",
   },
   cs: {
     breadcrumbHome: "Domů",
@@ -1237,6 +1291,12 @@ const uxStrings = {
     ariaMenuSection: "Témata a zkratky",
     ariaBreadcrumb: "Kde se nacházíte",
     ariaSearchResults: "Výsledky vyhledávání",
+    shareSection: "Sdílet odkaz",
+    shareTitle: "Chill Concierge",
+    shareText: "Otevřete toto téma v aplikaci:",
+    shareCopied: "Odkaz zkopírován do schránky.",
+    shareFailed: "Zkopírujte odkaz ručně:",
+    shareTileAria: "Sdílet odkaz k položce",
   },
 };
 
@@ -1365,6 +1425,7 @@ export default function App(){
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
   const [recentTick, setRecentTick] = useState(0);
   const [sentToast, setSentToast] = useState(false);
+  const [shareNotice, setShareNotice] = useState(null);
   const [conciergeError, setConciergeError] = useState(null);
   const [online, setOnline] = useState(() =>
     typeof navigator !== "undefined" ? navigator.onLine : true
@@ -1379,6 +1440,7 @@ export default function App(){
   const pendingDeepLinkNid = useRef(null);
   const deepLinkConsumed = useRef(false);
   const onChipClickRef = useRef(() => {});
+  const lastTouchedNidRef = useRef(null);
 
   const scrollToMainNav = () => {
     requestAnimationFrame(() => {
@@ -1435,6 +1497,12 @@ export default function App(){
     const t = window.setTimeout(() => setSentToast(false), 4200);
     return () => window.clearTimeout(t);
   }, [sentToast]);
+
+  useEffect(() => {
+    if (!shareNotice) return;
+    const t = window.setTimeout(() => setShareNotice(null), 2400);
+    return () => window.clearTimeout(t);
+  }, [shareNotice]);
 
   useEffect(() => {
     const anyOpen =
@@ -1780,7 +1848,11 @@ export default function App(){
   const openNode = (node) => setStack(s => [...s, node]);
   const goBack = () => {
     setWifiCtas({ showPassword: false, showNotOk: false });
-    setStack((s) => s.slice(0, -1));
+    setStack((s) => {
+      const next = s.slice(0, -1);
+      if (next.length === 0) lastTouchedNidRef.current = null;
+      return next;
+    });
   };
   const resetToRoot = () => setStack([]);
 
@@ -1823,6 +1895,8 @@ export default function App(){
   const ALL_SSIDS = ["D384","CDEA","CF2A","93EO","D93A","D9E4","6A04","9B7A","1CF8","D8C4","CD9E","CF20","23F0","B4B4","DA4E","D5F6"];
 
   const onChipClick = (n) => {
+    if (n?.nid) lastTouchedNidRef.current = n.nid;
+
     const bumpRecent = () => {
       if (n.nid) {
         pushRecentNid(n.nid);
@@ -1864,6 +1938,51 @@ export default function App(){
       });
     }
   };
+
+  function buildShareUrlWithNid(nid) {
+    try {
+      const u = new URL(window.location.href);
+      u.hash = "";
+      u.search = "";
+      if (lang) u.searchParams.set("lang", lang);
+      if (nid) u.searchParams.set("nid", nid);
+      return u.toString();
+    } catch {
+      return "";
+    }
+  }
+
+  function getContextualShareNid() {
+    if (stack.length > 0) return stack[stack.length - 1].nid ?? null;
+    return lastTouchedNidRef.current ?? null;
+  }
+
+  async function shareConciergeUrl(overrideNid) {
+    if (typeof window === "undefined" || !lang) return;
+    const nid = overrideNid ?? getContextualShareNid();
+    const url = buildShareUrlWithNid(nid);
+    if (!url) return;
+    const title = tUx(lang, "shareTitle");
+    const text = tUx(lang, "shareText");
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: `${text}\n${url}`,
+          url,
+        });
+        return;
+      } catch (err) {
+        if (err && err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareNotice(tUx(lang, "shareCopied"));
+    } catch {
+      window.prompt(tUx(lang, "shareFailed"), url);
+    }
+  }
 
   function applySearchHit(entry) {
     setSearchQuery("");
@@ -1918,6 +2037,7 @@ export default function App(){
             className="chipPrimary langBtnWide"
             style={{ ["--btn"]: btnColorForIndex(0) }}
             onClick={() => {
+              lastTouchedNidRef.current = null;
               setLang("en");
               resetToRoot();
               setSearchQuery("");
@@ -1935,6 +2055,7 @@ export default function App(){
               className="chipPrimary"
               style={{ ["--btn"]: btnColorForIndex(i + 1) }}
               onClick={() => {
+                lastTouchedNidRef.current = null;
                 setLang(code);
                 resetToRoot();
                 setSearchQuery("");
@@ -1983,17 +2104,17 @@ export default function App(){
           {lang && headerTb && (
             <div
               className={`headerCtaRow${isStandalone ? " headerCtaRow--solo" : ""}`}
-              aria-label={
+              aria-label={`${headerTb.bookApart}, ${tUx(lang, "shareSection")}${
                 isStandalone
-                  ? headerTb.bookApart
-                  : `${headerTb.bookApart}, ${
+                  ? ""
+                  : `, ${
                       deferredInstall
                         ? headerTb.installApp
                         : isIOS
                           ? headerTb.addToHome
                           : headerTb.installApp
                     }`
-              }
+              }`}
             >
               <a
                 className="headerBookBtn"
@@ -2003,6 +2124,13 @@ export default function App(){
               >
                 {headerTb.bookApart}
               </a>
+              <button
+                type="button"
+                className="headerShareBtn"
+                onClick={() => shareConciergeUrl()}
+              >
+                🔗 {tUx(lang, "shareSection")}
+              </button>
               {!isStandalone && (
                 <button
                   type="button"
@@ -2186,6 +2314,7 @@ export default function App(){
                       type="button"
                       className="recentChip"
                       onClick={() => {
+                        lastTouchedNidRef.current = r.nid;
                         navigateFlowNid(r.nid, FLOWS, {
                           setStack,
                           setShortcutsOpen,
@@ -2224,7 +2353,16 @@ export default function App(){
                 <button
                   type="button"
                   className="backBtn backBtn--teal"
+                  onClick={() => shareConciergeUrl()}
+                  title={tUx(lang, "shareSection")}
+                >
+                  🔗 {tUx(lang, "shareSection")}
+                </button>
+                <button
+                  type="button"
+                  className="backBtn backBtn--teal"
                   onClick={() => {
+                    lastTouchedNidRef.current = null;
                     setLang(null);
                     setStack([]);
                     setSearchQuery("");
@@ -2241,19 +2379,45 @@ export default function App(){
             </div>
 
             <div className="menuGrid">
-              {currentChildren.map((n, idx) => (
-                <button
-                  key={n.nid ?? `m-${idx}`}
-                  type="button"
-                  className="chipPrimary"
-                  style={{ ["--btn"]: btnColorForIndex(idx) }}
-                  onClick={() => onChipClick(n)}
-                  disabled={loading && !n.children}
-                  title={n.control?.sub || n.action || ""}
-                >
-                  {n.label}
-                </button>
-              ))}
+              {currentChildren.map((n, idx) =>
+                n.nid ? (
+                  <div key={n.nid} className="menuTileWrap">
+                    <button
+                      type="button"
+                      className="chipPrimary"
+                      style={{ ["--btn"]: btnColorForIndex(idx) }}
+                      onClick={() => onChipClick(n)}
+                      disabled={loading && !n.children}
+                      title={n.control?.sub || n.action || ""}
+                    >
+                      {n.label}
+                    </button>
+                    <button
+                      type="button"
+                      className="tileShareBtn"
+                      aria-label={`${tUx(lang, "shareTileAria")}: ${n.label}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        shareConciergeUrl(n.nid);
+                      }}
+                    >
+                      🔗
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    key={`m-${idx}`}
+                    type="button"
+                    className="chipPrimary"
+                    style={{ ["--btn"]: btnColorForIndex(idx) }}
+                    onClick={() => onChipClick(n)}
+                    disabled={loading && !n.children}
+                    title={n.control?.sub || n.action || ""}
+                  >
+                    {n.label}
+                  </button>
+                )
+              )}
             </div>
 
             <div className="tips" style={{ marginTop:8 }}>{t(lang,"stillAsk")}</div>
@@ -2279,9 +2443,9 @@ export default function App(){
       </div>
       </div>
 
-      {sentToast && lang && (
+      {lang && (sentToast || shareNotice) && (
         <div className="toastBar" role="status">
-          {tUx(lang, "sentToast")}
+          {sentToast ? tUx(lang, "sentToast") : shareNotice}
         </div>
       )}
 
