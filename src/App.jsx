@@ -1442,7 +1442,10 @@ export default function App(){
   }
 
   const openNode = (node) => setStack(s => [...s, node]);
-  const goBack   = () => setStack(s => s.slice(0, -1));
+  const goBack = () => {
+    setWifiCtas({ showPassword: false, showNotOk: false });
+    setStack((s) => s.slice(0, -1));
+  };
   const resetToRoot = () => setStack([]);
 
   const currentChildren =
@@ -1733,7 +1736,6 @@ export default function App(){
                     className="backBtn backBtn--danger"
                     onClick={() => {
                       goBack();
-                      setWifiCtas({ showPassword:false, showNotOk:false });
                       scrollToMainNav();
                     }}
                   >
@@ -1816,14 +1818,14 @@ export default function App(){
         </a>
       </footer>
 
-      {/* ===== CTA STACK ===== */}
+      {/* ===== CTA STACK (jen nad chatem — při otevřeném menu skrýt, ať nepřekrývá dlaždice) ===== */}
       <div className="fabStack" aria-live="polite">
-        {wifiCtas.showPassword && (
+        {wifiCtas.showPassword && !shortcutsOpen && (
           <button className="fabAction" onClick={() => setWifiRoomSheet({ open:true, floor:null, last:null })}>
             {t(lang,"showMyWifi")}
           </button>
         )}
-        {wifiCtas.showNotOk && (
+        {wifiCtas.showNotOk && !shortcutsOpen && (
           <button className="fabAction" onClick={() => setWifiSsidSheet({ open:true, ssid:null })}>
             {t(lang,"notOk")}
           </button>
