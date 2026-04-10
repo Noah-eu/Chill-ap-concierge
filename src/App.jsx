@@ -1,6 +1,7 @@
 // app.jsx
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -629,9 +630,71 @@ const searchI18n = {
   },
 };
 
+/** Zprávy při prázdné / chybějící odpovědi API */
+const replyI18n = {
+  cs: {
+    replyEmpty:
+      "Odpověď ze serveru je prázdná. Zkuste akci znovu. Při lokálním vývoji spusťte „npx netlify dev“ (funkce běží tam, ne ve Vite).",
+    replyNetwork:
+      "Nelze se připojit k serveru. Při „npm run dev“ musí současně běžet „npx netlify dev“ (proxy předává /.netlify/functions na port 8888).",
+    replyNoHtml: "Obsah odpovědi se nepodařilo bezpečně zobrazit — text níže:",
+  },
+  en: {
+    replyEmpty: "The server returned an empty reply. Please try again.",
+    replyNetwork:
+      "Cannot reach the server. For “npm run dev”, also run “npx netlify dev” (functions are proxied to port 8888).",
+    replyNoHtml: "Could not render the reply safely — plain text below:",
+  },
+  es: {
+    replyEmpty: "El servidor devolvió una respuesta vacía. Inténtalo de nuevo.",
+    replyNetwork: "No hay conexión con el servidor. Para desarrollo local, ejecuta también “npx netlify dev”.",
+    replyNoHtml: "No se pudo mostrar el contenido; texto a continuación:",
+  },
+  de: {
+    replyEmpty: "Der Server hat eine leere Antwort gesendet. Bitte erneut versuchen.",
+    replyNetwork: "Server nicht erreichbar. Für lokale Entwicklung bitte auch “npx netlify dev” starten.",
+    replyNoHtml: "Inhalt konnte nicht sicher dargestellt werden — Text unten:",
+  },
+  fr: {
+    replyEmpty: "Le serveur a renvoyé une réponse vide. Réessayez.",
+    replyNetwork: "Impossible de joindre le serveur. En local, lancez aussi “npx netlify dev”.",
+    replyNoHtml: "Impossible d’afficher le contenu — texte ci-dessous :",
+  },
+  ru: {
+    replyEmpty: "Сервер вернул пустой ответ. Попробуйте снова.",
+    replyNetwork: "Нет соединения с сервером. Для разработки запустите также «npx netlify dev».",
+    replyNoHtml: "Не удалось безопасно отобразить ответ — текст ниже:",
+  },
+  uk: {
+    replyEmpty: "Сервер повернув порожню відповідь. Спробуйте ще раз.",
+    replyNetwork: "Немає зв’язку з сервером. Для розробки також запустіть «npx netlify dev».",
+    replyNoHtml: "Не вдалося безпечно показати відповідь — текст нижче:",
+  },
+  nl: {
+    replyEmpty: "De server gaf een leeg antwoord. Probeer opnieuw.",
+    replyNetwork: "Geen verbinding met de server. Start voor lokaal ook “npx netlify dev”.",
+    replyNoHtml: "Kon de inhoud niet veilig tonen — platte tekst hieronder:",
+  },
+  it: {
+    replyEmpty: "Il server ha restituito una risposta vuota. Riprova.",
+    replyNetwork: "Impossibile contattare il server. In locale avvia anche “npx netlify dev”.",
+    replyNoHtml: "Impossibile mostrare il contenuto in modo sicuro — testo sotto:",
+  },
+  da: {
+    replyEmpty: "Serveren returnerede et tomt svar. Prøv igen.",
+    replyNetwork: "Kan ikke få kontakt til serveren. Kør også “npx netlify dev” lokalt.",
+    replyNoHtml: "Indholdet kunne ikke vises sikkert — tekst nedenfor:",
+  },
+  pl: {
+    replyEmpty: "Serwer zwrócił pustą odpowiedź. Spróbuj ponownie.",
+    replyNetwork: "Brak połączenia z serwerem. Lokalnie uruchom też „npx netlify dev”.",
+    replyNoHtml: "Nie udało się bezpiecznie wyświetlić treści — tekst poniżej:",
+  },
+};
+
 /** ===== helper: překlady ===== */
 const t = (lang, key) =>
-  tr[lang]?.[key] ?? searchI18n[lang]?.[key] ?? searchI18n.en[key] ?? key;
+  tr[lang]?.[key] ?? searchI18n[lang]?.[key] ?? searchI18n.en[key] ?? replyI18n[lang]?.[key] ?? replyI18n.en[key] ?? key;
 
 /** ===== vyhledávání: normalizace + skóre ===== */
 const stripForSearch = (s) =>
@@ -858,10 +921,71 @@ export default function App(){
     return ranked;
   }, [lang, searchQuery, searchIndex]);
 
-  function renderAssistant(md=""){
-    const raw = marked.parse(md, { breaks:true });
-    const clean = DOMPurify.sanitize(raw);
+  function renderAssistant(md){
+    const src = typeof md === "string" ? md : "";
+    if (!src.trim()) {
+      return <div className="bubble bot tips">{t(lang ?? "en", "replyEmpty")}</div>;
+    }
+
+    let raw;
+    try {
+      raw = marked.parse(src, { breaks: true, async: false });
+    } catch {
+      return (
+        <div className="bubble bot" style={{ whiteSpace: "pre-wrap" }}>
+          {src}
+        </div>
+      );
+    }
+
+    if (typeof raw !== "string") {
+      return (
+        <div className="bubble bot" style={{ whiteSpace: "pre-wrap" }}>
+          {src}
+        </div>
+      );
+    }
+
+    let clean = DOMPurify.sanitize(raw);
+    if (!clean.trim()) {
+      clean = DOMPurify.sanitize(raw, {
+        ADD_TAGS: ["img"],
+        ADD_ATTR: ["src", "alt", "title", "loading"],
+      });
+    }
+    if (!clean.trim()) {
+      return (
+        <div className="bubble bot">
+          <p className="tips" style={{ marginTop: 0 }}>
+            {t(lang ?? "en", "replyNoHtml")}
+          </p>
+          <div style={{ whiteSpace: "pre-wrap" }}>{src}</div>
+        </div>
+      );
+    }
+
     return <div className="bubble bot" dangerouslySetInnerHTML={{ __html: clean }} />;
+  }
+
+  function extractReplyFromResponseBody(rawText, httpOk) {
+    let data = null;
+    try {
+      data = rawText && rawText.trim() ? JSON.parse(rawText) : null;
+    } catch {
+      data = null;
+    }
+    let reply = "";
+    if (data && typeof data.reply === "string") reply = data.reply;
+    if (!reply && data && typeof data.body === "string") {
+      try {
+        const inner = JSON.parse(data.body);
+        if (typeof inner?.reply === "string") reply = inner.reply;
+      } catch {
+        /* ignore */
+      }
+    }
+    if (!reply.trim() && !httpOk && typeof data?.message === "string") reply = data.message;
+    return reply;
   }
 
   async function callBackend(payload){
@@ -870,22 +994,40 @@ export default function App(){
       const r = await fetch("/.netlify/functions/concierge", {
         method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
       });
-      const data = await r.json();
-      setChat(c => [...c, { role:"assistant", content:data.reply }]);
+      const rawText = await r.text();
+      let reply = extractReplyFromResponseBody(rawText, r.ok);
+      if (!reply.trim() && !r.ok) {
+        reply = `⚠️ HTTP ${r.status}`;
+      }
+      if (!reply.trim()) {
+        reply = t(lang ?? "en", "replyEmpty");
+      }
+      setChat((c) => [...c, { role:"assistant", content: reply }]);
     }catch{
-      setChat(c => [...c, { role:"assistant", content:"⚠️ Nelze se připojit k serveru. Zkuste to prosím znovu." }]);
+      setChat((c) => [...c, { role:"assistant", content: t(lang ?? "en", "replyNetwork") }]);
     }finally{ setLoading(false); }
   }
 
   function sendControl(promptText, control){
-    const next = [...chat, { role:"user", content:promptText }];
-    setChat(next);
-    return callBackend({ messages: next, uiLang: lang, control });
+    let nextMessages;
+    flushSync(() => {
+      setChat((prev) => {
+        nextMessages = [...prev, { role:"user", content: promptText }];
+        return nextMessages;
+      });
+    });
+    return callBackend({ messages: nextMessages, uiLang: lang, control });
   }
+
   function sendText(text){
-    const next = [...chat, { role:"user", content:text }];
-    setChat(next);
-    return callBackend({ messages: next, uiLang: lang });
+    let nextMessages;
+    flushSync(() => {
+      setChat((prev) => {
+        nextMessages = [...prev, { role:"user", content: text }];
+        return nextMessages;
+      });
+    });
+    return callBackend({ messages: nextMessages, uiLang: lang });
   }
 
   const openNode = (node) => setStack(s => [...s, node]);
