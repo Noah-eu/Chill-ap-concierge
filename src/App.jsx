@@ -49,6 +49,14 @@ const AppStyles = () => (
       background-attachment:fixed;
     }
 
+    .appShell{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      min-height:100dvh;
+      min-height:100svh;
+    }
+
     .appHeader{
       position:sticky;top:0;z-index:1500;
       padding:calc(10px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 12px max(16px, env(safe-area-inset-left,0px));
@@ -76,16 +84,29 @@ const AppStyles = () => (
     }
 
     .row{
-      display:flex;flex-direction:column;gap:14px;max-width:920px;margin:12px auto 28px;
-      padding:0 max(16px, env(safe-area-inset-left,0px)) 0 max(16px, env(safe-area-inset-right,0px));
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+      max-width:920px;
+      width:100%;
+      margin:0 auto;
+      padding:8px max(14px, env(safe-area-inset-left,0px)) max(12px, env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-right,0px));
+      overflow-y:auto;
+      overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      scroll-behavior:auto;
     }
     .scroller{
-      max-height:min(58dvh,520px);overflow:auto;padding:14px 14px 16px;border-radius:var(--radius-lg);
+      flex:0 0 auto;
+      overflow:visible;
+      padding:12px 14px 14px;
+      border-radius:var(--radius-lg);
       background:var(--surface);
       border:1px solid var(--border);
       box-shadow:var(--shadow);
-      scroll-behavior:auto;
-      -webkit-overflow-scrolling:touch;
     }
 
     .bubble{
@@ -184,7 +205,8 @@ const AppStyles = () => (
     .tips{color:var(--muted);font-size:13px;line-height:1.4;margin-top:6px}
 
     .searchPanel{
-      border-radius:var(--radius-lg);padding:16px 18px;
+      flex:0 0 auto;
+      border-radius:var(--radius-lg);padding:14px 16px;
       background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);
       scroll-margin-top:14px;
     }
@@ -228,7 +250,9 @@ const AppStyles = () => (
     .searchEmpty{padding:12px 14px;color:var(--muted);font-size:14px}
 
     .shortcuts{
-      border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;
+      flex:0 1 auto;
+      min-height:0;
+      border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;
       background:linear-gradient(165deg,#fff 0%,#f8fafc 100%);
       box-shadow:var(--shadow);scroll-margin-top:14px;
     }
@@ -238,14 +262,23 @@ const AppStyles = () => (
     .btnRow{display:flex;gap:8px;flex-wrap:wrap}
 
     .contactBar{
-      margin-top:2px;padding:14px 16px;border-radius:var(--radius-md);
+      flex:0 0 auto;
+      margin-top:2px;padding:12px 14px;border-radius:var(--radius-md);
       border:1px dashed rgba(13,148,136,.35);
       background:linear-gradient(90deg,rgba(236,253,245,.9),rgba(255,251,235,.85));
       color:var(--ink-soft);font-size:14px;line-height:1.45;
     }
 
+    .langChooserCard{
+      display:block;
+      width:100%;
+      max-width:100%;
+      box-sizing:border-box;
+    }
+
     .overlay{position:fixed;inset:0;background:rgba(15,20,25,.4);backdrop-filter:blur(4px);
-      display:flex;align-items:flex-end;justify-content:center;padding:18px;z-index:2000}
+      display:flex;align-items:flex-end;justify-content:center;
+      padding:18px;padding-bottom:max(18px, env(safe-area-inset-bottom, 0px));z-index:2000}
     .sheet{
       width:100%;max-width:560px;border-radius:var(--radius-lg) var(--radius-lg) 12px 12px;
       background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);padding:20px;
@@ -298,12 +331,25 @@ const AppStyles = () => (
 
     @media (max-width:640px){
       .grid{grid-template-columns:1fr}
-      .scroller{max-height:min(42dvh,380px)}
+      .row{
+        max-width:none;
+        margin:0;
+        padding-left:max(12px, env(safe-area-inset-left,0px));
+        padding-right:max(12px, env(safe-area-inset-right,0px));
+        padding-bottom:max(100px, calc(84px + env(safe-area-inset-bottom,0px)));
+      }
+      .row.rowLangOnly{
+        padding-bottom:max(16px, env(safe-area-inset-bottom,0px));
+      }
+      .scroller,.searchPanel,.shortcuts,.contactBar{
+        border-radius:14px;
+      }
     }
     @media (max-width:480px){
-      .row{padding-bottom:max(88px, calc(72px + env(safe-area-inset-bottom,0px)))}
+      .row:not(.rowLangOnly){padding-bottom:max(108px, calc(92px + env(safe-area-inset-bottom,0px)))}
       .brandMvp{gap:12px}
       .brandLogo{width:48px;height:48px;border-radius:14px}
+      .appHeader{padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:10px}
     }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -863,7 +909,7 @@ export default function App(){
 
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
 
-  const scrollerRef = useRef(null);
+  const mainColumnRef = useRef(null);
   const shortcutsRef = useRef(null);
   const searchWrapRef = useRef(null);
   const searchPanelRef = useRef(null);
@@ -878,18 +924,13 @@ export default function App(){
     if (lang) document.body.classList.add("lang-selected"); else document.body.classList.remove("lang-selected");
   }, [lang]);
 
-  // Autoscroll k poslední bublině bota
+  // Posuv hlavního sloupce (chat + menu) — jedna oblast skrollování na mobilu
   useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const bots = scroller.querySelectorAll(".bubble.bot");
-    const lastBot = bots[bots.length - 1];
-    if (lastBot) {
-      const top = lastBot.offsetTop - 8;
-      scroller.scrollTo({ top, behavior: "auto" });
-    } else {
-      scroller.scrollTo({ top: scroller.scrollHeight, behavior: "auto" });
-    }
+    const col = mainColumnRef.current;
+    if (!col) return;
+    requestAnimationFrame(() => {
+      col.scrollTo({ top: col.scrollHeight, behavior: "auto" });
+    });
   }, [chat, loading]);
 
   // Po výběru jazyka / otevření menu skoč na vyhledávání a témata
@@ -1190,7 +1231,7 @@ export default function App(){
     const rest = entries.filter(([code]) => code !== "en");
 
     return (
-      <div className="bubble bot" style={{ display:"inline-block", maxWidth:"100%" }}>
+      <div className="bubble bot langChooserCard">
         <strong>{tr.cs.chooseLang}</strong>
 
         <div className="langSingle">
@@ -1241,6 +1282,7 @@ export default function App(){
     <>
       <AppStyles />
 
+      <div className="appShell">
       {/* Header */}
       <header className="appHeader">
         <div className="brandMvp">
@@ -1260,9 +1302,9 @@ export default function App(){
         </div>
       </header>
 
-      <div className="row">
+      <div className={`row${lang ? "" : " rowLangOnly"}`} ref={mainColumnRef}>
         {/* CHAT SCROLLER */}
-        <div className="scroller" ref={scrollerRef}>
+        <div className="scroller">
           {!lang && renderLangChooser()}
 
           {chat.map((m,i) =>
@@ -1371,7 +1413,7 @@ export default function App(){
                     setWifiCtas({ showPassword:false, showNotOk:false });
                     setShortcutsOpen(false);
                     requestAnimationFrame(() => {
-                      scrollerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                      mainColumnRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                     });
                   }}
                 >
@@ -1428,6 +1470,7 @@ export default function App(){
 
         {/* Kontaktní lišta */}
         {lang && <div className="contactBar">{t(lang, "contact")}</div>}
+      </div>
       </div>
 
       {/* ===== CTA STACK ===== */}
