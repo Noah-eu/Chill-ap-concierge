@@ -34,13 +34,14 @@ const AppStyles = () => (
       --radius-btn-soft:12px;
       --shadow:0 4px 6px -1px rgba(15,20,25,.06), 0 12px 24px -4px rgba(15,20,25,.08);
       --shadow-lg:0 20px 40px -12px rgba(15,20,25,.15);
+      --whatsapp-dock:70px;
     }
 
     body{
       margin:0;
       height:100%;
       overflow:hidden;
-      font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      font-family:"Plus Jakarta Sans","DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
       color:var(--ink);
       -webkit-tap-highlight-color:transparent;
       background:
@@ -93,12 +94,15 @@ const AppStyles = () => (
       max-width:920px;
       width:100%;
       margin:0 auto;
-      padding:8px max(14px, env(safe-area-inset-left,0px)) max(12px, env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-right,0px));
+      padding:8px max(14px, env(safe-area-inset-left,0px)) calc(12px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-right,0px));
       overflow-y:auto;
       overflow-x:hidden;
       -webkit-overflow-scrolling:touch;
       overscroll-behavior:contain;
       scroll-behavior:auto;
+    }
+    .row:not(.rowLangOnly){
+      padding-bottom:calc(88px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px));
     }
     .scroller{
       flex:0 0 auto;
@@ -198,9 +202,10 @@ const AppStyles = () => (
       align-items:center;
       justify-content:center;
       gap:6px;
-      font-size:clamp(0.7rem, 3.1vw, 0.8rem);
-      line-height:1.22;
-      letter-spacing:.015em;
+      font-size:clamp(0.88rem, 3.9vw, 1.06rem);
+      line-height:1.2;
+      letter-spacing:.01em;
+      font-weight:800;
       text-align:center;
       hyphens:auto;
       -webkit-hyphens:auto;
@@ -220,30 +225,33 @@ const AppStyles = () => (
     .menuGrid .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 24px color-mix(in oklab,var(--btn),transparent 50%)}
     .menuGrid .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
     .menuGrid .chipPrimary:disabled{transform:none;filter:none;opacity:.5}
-    .menuGrid .chip{
-      color:var(--ink);
-      font-weight:700;
-      background:linear-gradient(180deg,#ffffff,#f4faf9);
-      border:1px solid color-mix(in oklab,var(--btn),transparent 72%);
-      border-top:3px solid var(--btn);
-      box-shadow:0 2px 8px rgba(13,148,136,.08);
-    }
-    .menuGrid .chip:hover{
-      transform:translateY(-2px);
-      border-color:color-mix(in oklab,var(--btn),transparent 50%);
-      box-shadow:0 6px 16px rgba(13,148,136,.12);
-    }
-    .menuGrid .chip:active{transform:translateY(0)}
-
     .backBtn{
       appearance:none;
-      padding:12px 16px;min-height:44px;border-radius:var(--radius-btn-soft);border:1px solid var(--border);
-      background:var(--surface);color:var(--ink-soft);font-weight:600;font-size:.88rem;
-      cursor:pointer;box-shadow:0 2px 6px rgba(15,20,25,.04);
-      transition:background .15s ease,border-color .15s ease;
+      padding:10px 14px;min-height:42px;border-radius:12px;
+      font-weight:700;font-size:.82rem;
+      cursor:pointer;
+      transition:transform .12s ease,box-shadow .12s ease,filter .12s ease,border-color .12s ease;
       touch-action:manipulation;
     }
-    .backBtn:hover{background:var(--surface-2);border-color:rgba(13,148,136,.25)}
+    .backBtn--teal{
+      border:1px solid color-mix(in oklab,var(--accent),transparent 58%);
+      background:linear-gradient(180deg,#f6fdfb,#e8f7f4);
+      color:var(--accent-2);
+      box-shadow:0 2px 8px rgba(13,148,136,.1);
+    }
+    .backBtn--teal:hover{
+      border-color:color-mix(in oklab,var(--accent),transparent 35%);
+      box-shadow:0 4px 12px rgba(13,148,136,.14);
+    }
+    .backBtn--teal:active{transform:scale(.98)}
+    .backBtn--danger{
+      border:1px solid color-mix(in oklab,var(--danger),black 12%);
+      background:linear-gradient(165deg,#f87171,#dc2626);
+      color:#fff;
+      box-shadow:0 3px 12px rgba(220,38,38,.35);
+    }
+    .backBtn--danger:hover{filter:brightness(1.05)}
+    .backBtn--danger:active{transform:scale(.98)}
 
     .typingBubble{min-height:48px;display:flex;align-items:center}
     .typingDots{display:inline-flex;gap:7px;align-items:center;padding:2px 4px}
@@ -310,31 +318,57 @@ const AppStyles = () => (
     .shortcuts{
       flex:0 1 auto;
       min-height:0;
-      border:1px solid color-mix(in oklab,var(--accent),transparent 88%);
-      border-radius:var(--radius-lg);
-      padding:14px 14px 16px;
-      background:linear-gradient(165deg,#ffffff 0%,#f6faf9 55%,#f0f7f6 100%);
-      box-shadow:var(--shadow), 0 0 0 1px rgba(255,255,255,.6) inset;
+      border:none;
+      border-radius:0;
+      padding:4px 0 8px;
+      background:transparent;
+      box-shadow:none;
       scroll-margin-top:14px;
     }
-    .shortcutsHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-    .shortcutsHeader strong{font-size:1rem;letter-spacing:-.02em}
+    .shortcutsHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;padding:0 2px}
+    .shortcutsHeader strong{font-size:1.02rem;letter-spacing:-.02em;font-weight:800}
 
-    .btnRow{display:flex;gap:8px;flex-wrap:wrap}
+    .btnRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
-    .contactBar{
-      flex:0 0 auto;
-      position:relative;
-      z-index:2;
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:var(--radius-md);
-      border:1px solid color-mix(in oklab,var(--accent),transparent 78%);
-      background:linear-gradient(100deg,rgba(236,253,250,.95),rgba(240,253,250,.92));
-      color:var(--ink-soft);
-      font-size:13px;
-      line-height:1.45;
-      box-shadow:0 2px 10px rgba(13,148,136,.06);
+    .whatsappDock{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      z-index:1050;
+      padding:10px max(14px, env(safe-area-inset-left,0px)) max(10px, env(safe-area-inset-bottom,0px)) max(14px, env(safe-area-inset-right,0px));
+      pointer-events:none;
+      background:linear-gradient(180deg,transparent,rgba(248,250,249,.92) 35%);
+    }
+    .whatsappDockBtn{
+      pointer-events:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      width:100%;
+      max-width:920px;
+      margin:0 auto;
+      padding:14px 18px;
+      border-radius:14px;
+      border:1px solid color-mix(in oklab,#128C7E,black 8%);
+      background:linear-gradient(165deg,#25D366,#128C7E);
+      color:#fff;
+      font-family:inherit;
+      font-weight:800;
+      font-size:.95rem;
+      letter-spacing:.02em;
+      text-decoration:none;
+      box-shadow:0 6px 22px rgba(18,140,126,.4);
+      transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
+    }
+    .whatsappDockBtn:active{transform:scale(.99);filter:brightness(.96)}
+    .whatsappDockBtn .waIco{font-size:1.35rem;line-height:1}
+
+    .langMenuGrid{margin-top:12px}
+    .langMenuGrid .langBtnWide{
+      grid-column:1 / -1;
+      aspect-ratio:auto;
+      min-height:54px;
+      padding:14px 16px;
     }
 
     .langChooserCard{
@@ -367,7 +401,7 @@ const AppStyles = () => (
 
     .fabStack{
       position:fixed;left:50%;transform:translateX(-50%);
-      bottom:max(16px, env(safe-area-inset-bottom,0px));z-index:1100;
+      bottom:calc(var(--whatsapp-dock) + 14px + env(safe-area-inset-bottom,0px));z-index:1150;
       display:flex;flex-direction:column;gap:10px;
       padding:0 max(12px, env(safe-area-inset-left,0px)) 0 max(12px, env(safe-area-inset-right,0px));
       width:min(calc(100vw - 24px), 400px);
@@ -383,7 +417,7 @@ const AppStyles = () => (
 
     .fab{
       position:fixed;right:max(14px, env(safe-area-inset-right,0px));
-      bottom:calc(100px + env(safe-area-inset-bottom, 0px));z-index:1000;
+      bottom:calc(var(--whatsapp-dock) + 100px + env(safe-area-inset-bottom, 0px));z-index:1140;
       appearance:none;border:none;border-radius:var(--radius-btn);
       padding:13px 18px;min-height:48px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
       box-shadow:0 4px 0 color-mix(in oklab,var(--danger),black 18%), 0 12px 28px rgba(220,38,38,.32);
@@ -393,27 +427,23 @@ const AppStyles = () => (
     }
     .fab:active{transform:translateY(2px)}
 
-    .langCard{max-width:420px;margin:0 auto}
-    .langSingle{display:flex;justify-content:center;margin-top:12px}
-    .langGrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
-
     @media (max-width:640px){
       .row{
         max-width:none;
         margin:0;
         padding-left:max(12px, env(safe-area-inset-left,0px));
         padding-right:max(12px, env(safe-area-inset-right,0px));
-        padding-bottom:max(100px, calc(84px + env(safe-area-inset-bottom,0px)));
+        padding-bottom:calc(24px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px));
       }
-      .row.rowLangOnly{
-        padding-bottom:max(16px, env(safe-area-inset-bottom,0px));
+      .row:not(.rowLangOnly){
+        padding-bottom:calc(104px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px));
       }
-      .scroller,.searchPanel,.shortcuts,.contactBar{
+      .scroller,.searchPanel{
         border-radius:14px;
       }
     }
     @media (max-width:480px){
-      .row:not(.rowLangOnly){padding-bottom:max(108px, calc(92px + env(safe-area-inset-bottom,0px)))}
+      .row:not(.rowLangOnly){padding-bottom:calc(112px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px))}
       .brandMvp{gap:12px}
       .brandLogo{width:48px;height:48px;border-radius:14px}
       .appHeader{padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:10px}
@@ -428,6 +458,56 @@ const AppStyles = () => (
 const LANGS = {
   cs:"Čeština", en:"English", es:"Español", de:"Deutsch", fr:"Français",
   ru:"Русский", uk:"Українська", nl:"Nederlands", it:"Italiano", da:"Dansk", pl:"Polski"
+};
+
+const WHATSAPP_E164 = "420733439733";
+
+/** Text tlačítka a předvyplněná zpráva pro wa.me (jazyk UI) */
+const whatsappI18n = {
+  cs: {
+    btn: "Napsat Davidovi na WhatsApp",
+    prefill: "Dobrý den, jsem host Chill Apartments a potřebuji pomoc s: ",
+  },
+  en: {
+    btn: "Message David on WhatsApp",
+    prefill: "Hi, I'm a guest at Chill Apartments and I need help with: ",
+  },
+  es: {
+    btn: "Escribir a David por WhatsApp",
+    prefill: "Hola, soy huésped en Chill Apartments y necesito ayuda con: ",
+  },
+  de: {
+    btn: "David per WhatsApp schreiben",
+    prefill: "Hallo, ich bin Gast in den Chill Apartments und brauche Hilfe bei: ",
+  },
+  fr: {
+    btn: "Écrire à David sur WhatsApp",
+    prefill: "Bonjour, je suis client aux Chill Apartments et j’ai besoin d’aide pour : ",
+  },
+  ru: {
+    btn: "Написать Давиду в WhatsApp",
+    prefill: "Здравствуйте, я гость Chill Apartments, нужна помощь с: ",
+  },
+  uk: {
+    btn: "Написати Давиду в WhatsApp",
+    prefill: "Добрий день, я гість Chill Apartments, потрібна допомога з: ",
+  },
+  nl: {
+    btn: "David een WhatsApp sturen",
+    prefill: "Hallo, ik ben gast in Chill Apartments en ik heb hulp nodig bij: ",
+  },
+  it: {
+    btn: "Scrivere a David su WhatsApp",
+    prefill: "Ciao, sono ospite ai Chill Apartments e ho bisogno di aiuto con: ",
+  },
+  da: {
+    btn: "Skriv til David på WhatsApp",
+    prefill: "Hej, jeg er gæst på Chill Apartments og har brug for hjælp til: ",
+  },
+  pl: {
+    btn: "Napisz do Davida na WhatsApp",
+    prefill: "Dzień dobry, jestem gościem Chill Apartments i potrzebuję pomocy w: ",
+  },
 };
 
 const tr = {
@@ -1250,6 +1330,9 @@ export default function App(){
     stack.length === 0 ? FLOWS :
     stack[stack.length - 1]?.children ?? FLOWS;
 
+  const waUi = whatsappI18n[lang ?? "cs"] ?? whatsappI18n.en;
+  const whatsappHref = `https://wa.me/${WHATSAPP_E164}?text=${encodeURIComponent(waUi.prefill)}`;
+
   const ALL_SSIDS = ["D384","CDEA","CF2A","93EO","D93A","D9E4","6A04","9B7A","1CF8","D8C4","CD9E","CF20","23F0","B4B4","DA4E","D5F6"];
 
   const onChipClick = (n) => {
@@ -1328,10 +1411,11 @@ export default function App(){
       <div className="bubble bot langChooserCard">
         <strong>{tr.cs.chooseLang}</strong>
 
-        <div className="langSingle">
+        <div className="menuGrid langMenuGrid">
           <button
-            className="chipPrimary"
-            style={{ ["--btn"]: "var(--blue)" }}
+            type="button"
+            className="chipPrimary langBtnWide"
+            style={{ ["--btn"]: btnColorForIndex(0) }}
             onClick={() => {
               setLang("en");
               resetToRoot();
@@ -1343,14 +1427,12 @@ export default function App(){
           >
             {first?.[1] || "English"}
           </button>
-        </div>
-
-        <div className="langGrid2">
-          {rest.map(([code,label], i) => (
+          {rest.map(([code, label], i) => (
             <button
+              type="button"
               key={code}
               className="chipPrimary"
-              style={{ ["--btn"]: btnColorForIndex(i+1) }}
+              style={{ ["--btn"]: btnColorForIndex(i + 1) }}
               onClick={() => {
                 setLang(code);
                 resetToRoot();
@@ -1485,7 +1567,8 @@ export default function App(){
               <div className="btnRow">
                 {stack.length > 0 && (
                   <button
-                    className="backBtn"
+                    type="button"
+                    className="backBtn backBtn--danger"
                     onClick={() => {
                       goBack();
                       setWifiCtas({ showPassword:false, showNotOk:false });
@@ -1495,11 +1578,12 @@ export default function App(){
                     {t(lang,"back")}
                   </button>
                 )}
-                <button className="backBtn" onClick={() => { setShortcutsOpen(false); }}>
+                <button type="button" className="backBtn backBtn--teal" onClick={() => { setShortcutsOpen(false); }}>
                   {t(lang,"hide")}
                 </button>
                 <button
-                  className="backBtn"
+                  type="button"
+                  className="backBtn backBtn--teal"
                   onClick={() => {
                     setLang(null);
                     setStack([]);
@@ -1517,29 +1601,19 @@ export default function App(){
             </div>
 
             <div className="menuGrid">
-              {currentChildren.map((n, idx) =>
-                n.children ? (
-                  <button
-                    key={idx}
-                    className="chip"
-                    style={{ ["--btn"]: btnColorForIndex(idx) }}
-                    onClick={() => onChipClick(n)}
-                  >
-                    {n.label}
-                  </button>
-                ) : (
-                  <button
-                    key={idx}
-                    className="chipPrimary"
-                    style={{ ["--btn"]: btnColorForIndex(idx) }}
-                    onClick={() => onChipClick(n)}
-                    disabled={loading}
-                    title={n.control?.sub || n.action || ""}
-                  >
-                    {n.label}
-                  </button>
-                )
-              )}
+              {currentChildren.map((n, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="chipPrimary"
+                  style={{ ["--btn"]: btnColorForIndex(idx) }}
+                  onClick={() => onChipClick(n)}
+                  disabled={loading && !n.children}
+                  title={n.control?.sub || n.action || ""}
+                >
+                  {n.label}
+                </button>
+              ))}
             </div>
 
             <div className="tips" style={{ marginTop:8 }}>{t(lang,"stillAsk")}</div>
@@ -1562,10 +1636,23 @@ export default function App(){
           </button>
         )}
 
-        {/* Kontaktní lišta */}
-        {lang && <div className="contactBar">{t(lang, "contact")}</div>}
       </div>
       </div>
+
+      <footer className="whatsappDock" role="contentinfo">
+        <a
+          className="whatsappDockBtn"
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={waUi.btn}
+        >
+          <span className="waIco" aria-hidden>
+            💬
+          </span>
+          <span>{waUi.btn}</span>
+        </a>
+      </footer>
 
       {/* ===== CTA STACK ===== */}
       <div className="fabStack" aria-live="polite">
@@ -1603,7 +1690,7 @@ export default function App(){
               ))}
             </div>
             <div className="pillRow">
-              <button className="backBtn" onClick={()=>setRoomSheet({open:false,floor:null,last:null})}>{t(lang,"cancel")}</button>
+              <button type="button" className="backBtn backBtn--teal" onClick={()=>setRoomSheet({open:false,floor:null,last:null})}>{t(lang,"cancel")}</button>
               <button
                 className="chipPrimary"
                 style={{ ["--btn"]: "var(--blue)" }}
@@ -1639,7 +1726,7 @@ export default function App(){
               ))}
             </div>
             <div className="pillRow">
-              <button className="backBtn" onClick={()=>setWifiRoomSheet({open:false,floor:null,last:null})}>{t(lang,"cancel")}</button>
+              <button type="button" className="backBtn backBtn--teal" onClick={()=>setWifiRoomSheet({open:false,floor:null,last:null})}>{t(lang,"cancel")}</button>
               <button
                 className="chipPrimary"
                 style={{ ["--btn"]: "var(--blue)" }}
@@ -1670,7 +1757,7 @@ export default function App(){
               ))}
             </div>
             <div className="pillRow">
-              <button className="backBtn" onClick={()=>setWifiSsidSheet({open:false, ssid:null})}>{t(lang,"cancel")}</button>
+              <button type="button" className="backBtn backBtn--teal" onClick={()=>setWifiSsidSheet({open:false, ssid:null})}>{t(lang,"cancel")}</button>
               <button
                 className="chipPrimary"
                 style={{ ["--btn"]: "var(--blue)" }}
