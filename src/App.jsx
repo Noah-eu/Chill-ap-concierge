@@ -345,14 +345,35 @@ const AppStyles = () => (
       background:color-mix(in oklab,var(--accent),transparent 88%);
     }
     .essentialsAllTopicsBtn{
-      display:block;width:100%;box-sizing:border-box;margin:0 0 14px;
-      min-height:50px;padding:12px 16px;border-radius:12px;border:1px dashed var(--border);
-      background:var(--surface-2);font-family:var(--font-app);font-weight:700;font-size:.86rem;
-      color:var(--accent-2);cursor:pointer;touch-action:manipulation;
+      display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;
+      margin:8px 0 18px;padding:16px 20px;border-radius:16px;cursor:pointer;touch-action:manipulation;
+      min-height:60px;border:2px solid color-mix(in oklab,var(--accent),black 14%);
+      font-family:var(--font-app);font-weight:800;font-size:clamp(.95rem,3.2vw,1.08rem);letter-spacing:.03em;
+      color:#f8fffe;
+      background:linear-gradient(155deg,color-mix(in oklab,var(--accent),white 14%) 0%,var(--accent) 40%,color-mix(in oklab,var(--accent),black 12%) 100%);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.28) inset,
+        0 2px 0 rgba(255,255,255,.08) inset,
+        0 10px 28px color-mix(in oklab,var(--accent),transparent 48%),
+        0 4px 14px rgba(15,20,25,.14);
+      text-shadow:0 1px 0 rgba(0,0,0,.22);
+      transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
+    }
+    .essentialsAllTopicsBtnIcon{
+      font-size:1.15rem;line-height:1;opacity:.95;font-weight:900;
     }
     .essentialsAllTopicsBtn:hover,.essentialsAllTopicsBtn:focus-visible{
-      border-color:var(--accent);background:color-mix(in oklab,var(--accent),transparent 90%);outline:none;
+      filter:brightness(1.05);outline:none;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.3) inset,
+        0 2px 0 rgba(255,255,255,.1) inset,
+        0 12px 32px color-mix(in oklab,var(--accent),transparent 42%),
+        0 4px 16px rgba(15,20,25,.16);
     }
+    .essentialsAllTopicsBtn:focus-visible{
+      outline:3px solid color-mix(in oklab,var(--accent),white 35%);outline-offset:3px;
+    }
+    .essentialsAllTopicsBtn:active{transform:scale(.985);filter:brightness(.97)}
     .wifiCopyBar{margin:8px 0 0;padding:0 2px}
     .wifiCopyBtn{
       appearance:none;font-family:var(--font-app);font-size:.84rem;font-weight:700;
@@ -2525,6 +2546,9 @@ export default function App(){
                   className="essentialsAllTopicsBtn"
                   onClick={() => setShowAllTopics(true)}
                 >
+                  <span className="essentialsAllTopicsBtnIcon" aria-hidden>
+                    ⊞
+                  </span>
                   {tUx(lang, "essentialsAllTopics")}
                 </button>
               </>
