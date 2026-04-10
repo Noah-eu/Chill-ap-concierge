@@ -41,6 +41,16 @@ function pushRecentNid(nid) {
   }
 }
 
+function removeRecentNid(nid) {
+  if (!nid || typeof window === "undefined") return;
+  try {
+    const cur = loadRecentNids().filter((x) => x !== nid);
+    localStorage.setItem(LS_RECENT, JSON.stringify(cur));
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Cesta od kořene k uzlu s daným `nid` (včetně cíle). */
 function findPathByNid(nodes, targetNid, pathSoFar = []) {
   if (!nodes?.length) return null;
@@ -299,7 +309,7 @@ const AppStyles = () => (
       appearance:none;font-family:var(--font-app);font-size:.82rem;font-weight:700;
       padding:10px 14px;border-radius:999px;border:1px solid color-mix(in oklab,var(--accent),transparent 45%);
       background:linear-gradient(180deg,var(--surface),var(--surface-2));color:var(--accent-2);
-      cursor:pointer;min-height:44px;touch-action:manipulation;
+      cursor:pointer;min-height:44px;touch-action:manipulation;-webkit-user-select:none;user-select:none;
     }
     .recentChip:hover,.recentChip:focus-visible{border-color:var(--accent);outline:none}
     .searchQuickPicks{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
@@ -1262,6 +1272,7 @@ const uxStrings = {
   en: {
     breadcrumbHome: "Home",
     recentTitle: "Recently used",
+    recentRemoveHint: "Hold to remove from this list",
     searchTryTitle: "Try:",
     searchTryWifi: "Wi‑Fi",
     searchTryInstructions: "Check-in instructions",
@@ -1282,6 +1293,7 @@ const uxStrings = {
   cs: {
     breadcrumbHome: "Domů",
     recentTitle: "Naposledy",
+    recentRemoveHint: "Podržením položku odeberete z Naposledy",
     searchTryTitle: "Zkuste:",
     searchTryWifi: "Wi‑Fi",
     searchTryInstructions: "Instrukce k ubytování",
@@ -1442,6 +1454,15 @@ export default function App(){
   const deepLinkConsumed = useRef(false);
   const onChipClickRef = useRef(() => {});
   const lastTouchedNidRef = useRef(null);
+  const recentLongPressTimerRef = useRef(null);
+  const skipNextRecentChipClickRef = useRef(false);
+
+  const clearRecentLongPressTimer = () => {
+    if (recentLongPressTimerRef.current != null) {
+      clearTimeout(recentLongPressTimerRef.current);
+      recentLongPressTimerRef.current = null;
+    }
+  };
 
   const scrollToMainNav = () => {
     requestAnimationFrame(() => {
@@ -1504,6 +1525,15 @@ export default function App(){
     const t = window.setTimeout(() => setShareNotice(null), 2400);
     return () => window.clearTimeout(t);
   }, [shareNotice]);
+
+  useEffect(() => {
+    return () => {
+      if (recentLongPressTimerRef.current != null) {
+        clearTimeout(recentLongPressTimerRef.current);
+        recentLongPressTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const anyOpen =
@@ -2312,7 +2342,35 @@ export default function App(){
                       key={r.nid}
                       type="button"
                       className="recentChip"
+                      title={tUx(lang, "recentRemoveHint")}
+                      aria-label={`${r.label}. ${tUx(lang, "recentRemoveHint")}`}
+                      onContextMenu={(e) => e.preventDefault()}
+                      onPointerDown={(e) => {
+                        if (e.pointerType === "mouse" && e.button !== 0) return;
+                        clearRecentLongPressTimer();
+                        const nid = r.nid;
+                        recentLongPressTimerRef.current = window.setTimeout(() => {
+                          recentLongPressTimerRef.current = null;
+                          skipNextRecentChipClickRef.current = true;
+                          removeRecentNid(nid);
+                          setRecentTick((x) => x + 1);
+                          if (typeof navigator !== "undefined" && navigator.vibrate) {
+                            try {
+                              navigator.vibrate(15);
+                            } catch {
+                              /* ignore */
+                            }
+                          }
+                        }, 550);
+                      }}
+                      onPointerUp={clearRecentLongPressTimer}
+                      onPointerCancel={clearRecentLongPressTimer}
+                      onPointerLeave={clearRecentLongPressTimer}
                       onClick={() => {
+                        if (skipNextRecentChipClickRef.current) {
+                          skipNextRecentChipClickRef.current = false;
+                          return;
+                        }
                         lastTouchedNidRef.current = r.nid;
                         navigateFlowNid(r.nid, FLOWS, {
                           setStack,
