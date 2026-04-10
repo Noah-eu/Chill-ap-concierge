@@ -625,7 +625,7 @@ const AppStyles = () => (
     .whatsappDockBtn:active{transform:scale(.99);filter:brightness(.96)}
     .whatsappDockBtn .waIco{font-size:1.35rem;line-height:1}
 
-    .langMenuGrid{margin-top:12px}
+    .langMenuGrid{margin-top:0}
     .langMenuGrid .langBtnWide{
       grid-column:1 / -1;
       aspect-ratio:auto;
@@ -726,7 +726,8 @@ const AppStyles = () => (
 /** ================== i18n ================== */
 const LANGS = {
   cs:"Čeština", en:"English", es:"Español", de:"Deutsch", fr:"Français",
-  ru:"Русский", uk:"Українська", nl:"Nederlands", it:"Italiano", da:"Dansk", pl:"Polski"
+  uk:"Українська", nl:"Nederlands", it:"Italiano", da:"Dansk", pl:"Polski",
+  ru:"Русский",
 };
 
 const WHATSAPP_E164 = "420733439733";
@@ -2029,8 +2030,6 @@ export default function App(){
 
     return (
       <div className="bubble bot langChooserCard">
-        <strong>{tr.cs.chooseLang}</strong>
-
         <div className="menuGrid langMenuGrid">
           <button
             type="button"
