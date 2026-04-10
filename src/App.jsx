@@ -12,6 +12,74 @@ const MATTERPORT_URL =
 const BOOKING_URL_CS = "https://www.chillapartments.cz/rezervace-online/";
 const BOOKING_URL_INTL = "https://www.chillapartments.cz/en/rezervace-online/";
 
+const LS_RECENT = "chill_concierge_recent_v1";
+const LS_LAST_REPLY = "chill_concierge_last_reply_v1";
+
+function flowNode(nid, rest) {
+  return { nid, ...rest };
+}
+
+function loadRecentNids() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LS_RECENT);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.slice(0, 8) : [];
+  } catch {
+    return [];
+  }
+}
+
+function pushRecentNid(nid) {
+  if (!nid || typeof window === "undefined") return;
+  try {
+    const cur = loadRecentNids().filter((x) => x !== nid);
+    cur.unshift(nid);
+    localStorage.setItem(LS_RECENT, JSON.stringify(cur.slice(0, 5)));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Cesta od kořene k uzlu s daným `nid` (včetně cíle). */
+function findPathByNid(nodes, targetNid, pathSoFar = []) {
+  if (!nodes?.length) return null;
+  for (const n of nodes) {
+    const chain = [...pathSoFar, n];
+    if (n.nid === targetNid) return chain;
+    if (n.children?.length) {
+      const hit = findPathByNid(n.children, targetNid, chain);
+      if (hit) return hit;
+    }
+  }
+  return null;
+}
+
+/** Otevře větev menu podle `nid` (deep link / naposledy). */
+function navigateFlowNid(nid, flows, actions) {
+  if (!flows?.length || !nid) return false;
+  const path = findPathByNid(flows, nid);
+  if (!path?.length) return false;
+  const { setStack, setShortcutsOpen, setWifiCtas, scrollToMainNav, onChipClick } = actions;
+  const target = path[path.length - 1];
+  if (target.children?.length) {
+    flushSync(() => {
+      setStack(path);
+      setShortcutsOpen(true);
+      setWifiCtas({ showPassword: false, showNotOk: false });
+    });
+  } else {
+    flushSync(() => {
+      setStack(path.slice(0, -1));
+      setShortcutsOpen(true);
+      setWifiCtas({ showPassword: false, showNotOk: false });
+    });
+    requestAnimationFrame(() => onChipClick(target));
+  }
+  scrollToMainNav?.();
+  return true;
+}
+
 /** ================== UI (inline CSS) ================== */
 const AppStyles = () => (
   <style>{`
@@ -53,6 +121,41 @@ const AppStyles = () => (
         radial-gradient(90% 70% at 100% 10%, rgba(20,184,166,.08), transparent 48%),
         linear-gradient(168deg, #f8fafb 0%, #eef2f1 42%, #ecf4f3 100%);
       background-attachment:fixed;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root{
+        --ink:#e8ecf0;
+        --ink-soft:#b8c0c8;
+        --muted:#8a939e;
+        --surface:#141a1f;
+        --surface-2:#1c242c;
+        --border:rgba(255,255,255,.10);
+        --glow:rgba(20,184,166,.18);
+        --shadow:0 4px 6px -1px rgba(0,0,0,.35), 0 12px 24px -4px rgba(0,0,0,.45);
+        --shadow-lg:0 20px 40px -12px rgba(0,0,0,.55);
+      }
+      body{
+        background:
+          radial-gradient(120% 80% at 0% 0%, rgba(13,148,136,.16), transparent 52%),
+          radial-gradient(90% 70% at 100% 10%, rgba(20,184,166,.10), transparent 48%),
+          linear-gradient(168deg, #0d1114 0%, #121a1a 42%, #0f1616 100%);
+      }
+      .appHeader{
+        background:rgba(20,26,30,.92);
+      }
+      .scroller{
+        background:linear-gradient(180deg,#1a2128,#151b20);
+      }
+      .me{
+        background:linear-gradient(145deg, #134e4a, #115e59);
+        color:#ecfdf5;
+      }
+      .bot{
+        background:linear-gradient(180deg, #1c242c, #171d24);
+      }
+      .offlineBar{color:#fcd34d;background:rgba(251,191,36,.12)}
+      .errorBar{color:#fecaca}
     }
 
     #root{font-family:var(--font-app)}
@@ -156,6 +259,63 @@ const AppStyles = () => (
       border:1px solid var(--border);
       box-shadow:var(--shadow);
     }
+    .scroller--elevated{
+      box-shadow:var(--shadow), 0 0 0 1px color-mix(in oklab,var(--accent),transparent 90%);
+    }
+    .sectionDivider{
+      height:1px;
+      background:linear-gradient(90deg,transparent,var(--border),transparent);
+      margin:2px 0 0;
+      flex-shrink:0;
+    }
+    .breadcrumbNav{
+      font-size:.78rem;font-weight:600;color:var(--muted);line-height:1.4;
+      margin:0 0 8px;padding:8px 12px;border-radius:12px;background:var(--surface-2);
+      border:1px solid var(--border);
+    }
+    .breadcrumbNav .crumbSep{opacity:.5;padding:0 5px}
+    .recentRow{margin:0 0 10px}
+    .recentRowLabel{
+      font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.12em;margin:0 0 6px 2px;
+    }
+    .recentChips{display:flex;flex-wrap:wrap;gap:8px}
+    .recentChip{
+      appearance:none;font-family:var(--font-app);font-size:.82rem;font-weight:700;
+      padding:10px 14px;border-radius:999px;border:1px solid color-mix(in oklab,var(--accent),transparent 45%);
+      background:linear-gradient(180deg,var(--surface),var(--surface-2));color:var(--accent-2);
+      cursor:pointer;min-height:44px;touch-action:manipulation;
+    }
+    .recentChip:hover,.recentChip:focus-visible{border-color:var(--accent);outline:none}
+    .searchQuickPicks{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
+    .searchQuickPicksLabel{font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:8px}
+    .searchQuickPickBtn{
+      display:block;width:100%;text-align:left;margin-bottom:6px;padding:11px 14px;border-radius:12px;
+      border:1px solid var(--border);background:var(--surface-2);font-family:var(--font-app);
+      font-weight:600;font-size:.88rem;color:var(--accent-2);cursor:pointer;min-height:46px;touch-action:manipulation;
+    }
+    .searchQuickPickBtn:hover,.searchQuickPickBtn:focus-visible{
+      background:color-mix(in oklab,var(--accent),transparent 86%);outline:none;
+    }
+    .toastBar{
+      position:fixed;top:calc(env(safe-area-inset-top,0px) + 72px);left:50%;transform:translateX(-50%);
+      z-index:2100;max-width:min(520px,calc(100vw - 24px));padding:12px 18px;border-radius:14px;
+      background:linear-gradient(165deg,var(--accent),var(--accent-2));color:#fff;font-weight:700;font-size:.86rem;
+      text-shadow:0 1px 0 rgba(0,0,0,.25);box-shadow:var(--shadow-lg);
+      animation:toastIn .28s ease;text-align:center;
+    }
+    @keyframes toastIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+    .offlineBar,.errorBar{
+      max-width:920px;width:100%;margin:0 auto 8px;
+      padding:11px 14px;border-radius:12px;font-size:.86rem;font-weight:600;line-height:1.45;
+      box-sizing:border-box;
+    }
+    .offlineBar{background:rgba(251,191,36,.2);border:1px solid rgba(245,158,11,.38);color:#92400e}
+    .errorBar{
+      background:rgba(252,165,165,.18);border:1px solid rgba(248,113,113,.42);color:#991b1b;
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    }
+    .errorBar a{color:inherit;font-weight:800;text-underline-offset:3px}
 
     .bubble{
       border-radius:var(--radius-md);padding:12px 16px;line-height:1.45;width:fit-content;max-width:100%;white-space:pre-line;
@@ -280,7 +440,7 @@ const AppStyles = () => (
     .backBtn{
       appearance:none;
       font-family:var(--font-app);
-      padding:10px 14px;min-height:42px;border-radius:12px;
+      padding:12px 16px;min-height:46px;border-radius:12px;
       font-weight:700;font-size:.82rem;
       cursor:pointer;
       transition:transform .12s ease,box-shadow .12s ease,filter .12s ease,border-color .12s ease;
@@ -1048,9 +1208,50 @@ const replyI18n = {
   },
 };
 
+/** Rychlé UX řetězce (cs + en, ostatní jazyky → en) */
+const uxStrings = {
+  en: {
+    breadcrumbHome: "Home",
+    recentTitle: "Recently used",
+    searchTryTitle: "Try:",
+    searchTryWifi: "Wi‑Fi",
+    searchTryInstructions: "Check-in instructions",
+    searchTryFood: "Food & nearby",
+    sentToast: "Sent — tap « Back » (red) to return to topics.",
+    errorWhatsappCta: "Report via WhatsApp",
+    offlineBanner: "You’re offline. The app may be cached; new answers might not load.",
+    ariaMenuSection: "Topics and shortcuts",
+    ariaBreadcrumb: "Where you are",
+    ariaSearchResults: "Search results",
+  },
+  cs: {
+    breadcrumbHome: "Domů",
+    recentTitle: "Naposledy",
+    searchTryTitle: "Zkuste:",
+    searchTryWifi: "Wi‑Fi",
+    searchTryInstructions: "Instrukce k ubytování",
+    searchTryFood: "Jídlo a okolí",
+    sentToast: "Odesláno — pro návrat k tématům klepněte na červené « Zpět ».",
+    errorWhatsappCta: "Nahlásit přes WhatsApp",
+    offlineBanner: "Jste offline. Aplikace může být z mezipaměti; nové odpovědi nemusí přijít.",
+    ariaMenuSection: "Témata a zkratky",
+    ariaBreadcrumb: "Kde se nacházíte",
+    ariaSearchResults: "Výsledky vyhledávání",
+  },
+};
+
+const tUx = (lang, key) => uxStrings[lang]?.[key] ?? uxStrings.en[key] ?? key;
+
 /** ===== helper: překlady ===== */
 const t = (lang, key) =>
-  tr[lang]?.[key] ?? searchI18n[lang]?.[key] ?? searchI18n.en[key] ?? replyI18n[lang]?.[key] ?? replyI18n.en[key] ?? key;
+  tr[lang]?.[key] ??
+  uxStrings[lang]?.[key] ??
+  uxStrings.en[key] ??
+  searchI18n[lang]?.[key] ??
+  searchI18n.en[key] ??
+  replyI18n[lang]?.[key] ??
+  replyI18n.en[key] ??
+  key;
 
 /** ===== vyhledávání: normalizace + skóre ===== */
 const stripForSearch = (s) =>
@@ -1162,6 +1363,12 @@ export default function App(){
   const [wifiSsidSheet, setWifiSsidSheet] = useState({ open:false, ssid:null });
 
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
+  const [recentTick, setRecentTick] = useState(0);
+  const [sentToast, setSentToast] = useState(false);
+  const [conciergeError, setConciergeError] = useState(null);
+  const [online, setOnline] = useState(() =>
+    typeof navigator !== "undefined" ? navigator.onLine : true
+  );
 
   const mainColumnRef = useRef(null);
   const prevChatLenRef = useRef(0);
@@ -1169,6 +1376,9 @@ export default function App(){
   const shortcutsRef = useRef(null);
   const searchWrapRef = useRef(null);
   const searchPanelRef = useRef(null);
+  const pendingDeepLinkNid = useRef(null);
+  const deepLinkConsumed = useRef(false);
+  const onChipClickRef = useRef(() => {});
 
   const scrollToMainNav = () => {
     requestAnimationFrame(() => {
@@ -1208,6 +1418,61 @@ export default function App(){
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+
+  useEffect(() => {
+    const up = () => setOnline(true);
+    const down = () => setOnline(false);
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    return () => {
+      window.removeEventListener("online", up);
+      window.removeEventListener("offline", down);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sentToast) return;
+    const t = window.setTimeout(() => setSentToast(false), 4200);
+    return () => window.clearTimeout(t);
+  }, [sentToast]);
+
+  useEffect(() => {
+    const anyOpen =
+      roomSheet.open ||
+      wifiRoomSheet.open ||
+      wifiSsidSheet.open ||
+      installHelpOpen;
+    if (!anyOpen) return;
+    const id = requestAnimationFrame(() => {
+      document.querySelector(".overlay .sheet")?.querySelector("button")?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [roomSheet.open, wifiRoomSheet.open, wifiSsidSheet.open, installHelpOpen]);
+
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      const n = u.searchParams.get("nid");
+      if (n) pendingDeepLinkNid.current = n;
+      const l = u.searchParams.get("lang");
+      if (l && LANGS[l]) setLang(l);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!lang || typeof window === "undefined") return;
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set("lang", lang);
+      const n = u.searchParams.get("nid");
+      if (n) u.searchParams.set("nid", n);
+      window.history.replaceState(null, "", `${u.pathname}?${u.searchParams.toString()}`);
+    } catch {
+      /* ignore */
+    }
+  }, [lang]);
 
   useEffect(() => {
     const onBip = (e) => {
@@ -1261,69 +1526,93 @@ export default function App(){
   /** ====== FLOWS ====== */
   function makeFlows(activeLang){
     const FOOD = [
-      { label: t(activeLang,"diningLabel"),   control:{ intent:"local", sub:"dining" } },
-      { label: t(activeLang,"bakeryLabel"),   control:{ intent:"local", sub:"bakery" } },
-      { label: t(activeLang,"cafeBarGroupLabel"), children:[
-        { label: t(activeLang,"cafeLabel"), control:{ intent:"local", sub:"cafe" } },
-        { label: t(activeLang,"barLabel"),  control:{ intent:"local", sub:"bar"  } },
-      ]},
-      { label: t(activeLang,"groceryLabel"),  control:{ intent:"local", sub:"grocery" } },
-      { label: t(activeLang,"pharmacyLabel"), control:{ intent:"local", sub:"pharmacy" } },
-      { label: t(activeLang,"foodDelivery"),  control:{ intent:"tech",  sub:"food_delivery" } },
-      { label: t(activeLang,"moneyGroupLabel"), children:[
-        { label: t(activeLang,"exchangeLabel"), control:{ intent:"local", sub:"exchange" } },
-        { label: t(activeLang,"atmLabel"),      control:{ intent:"local", sub:"atm" } },
-      ]},
+      flowNode("food_dining", { label: t(activeLang,"diningLabel"), control:{ intent:"local", sub:"dining" } }),
+      flowNode("food_bakery", { label: t(activeLang,"bakeryLabel"), control:{ intent:"local", sub:"bakery" } }),
+      flowNode("food_cafe_bar", {
+        label: t(activeLang,"cafeBarGroupLabel"),
+        children:[
+          flowNode("food_cafe", { label: t(activeLang,"cafeLabel"), control:{ intent:"local", sub:"cafe" } }),
+          flowNode("food_bar", { label: t(activeLang,"barLabel"),  control:{ intent:"local", sub:"bar"  } }),
+        ],
+      }),
+      flowNode("food_grocery", { label: t(activeLang,"groceryLabel"),  control:{ intent:"local", sub:"grocery" } }),
+      flowNode("food_pharmacy", { label: t(activeLang,"pharmacyLabel"), control:{ intent:"local", sub:"pharmacy" } }),
+      flowNode("food_delivery", { label: t(activeLang,"foodDelivery"),  control:{ intent:"tech",  sub:"food_delivery" } }),
+      flowNode("food_money", {
+        label: t(activeLang,"moneyGroupLabel"),
+        children:[
+          flowNode("food_exchange", { label: t(activeLang,"exchangeLabel"), control:{ intent:"local", sub:"exchange" } }),
+          flowNode("food_atm", { label: t(activeLang,"atmLabel"),      control:{ intent:"local", sub:"atm" } }),
+        ],
+      }),
     ];
 
     const TECH = [
-      { label: t(activeLang,"wifiLabel"),            control:{ intent:"tech", sub:"wifi", kind:"wifi" } },
-      { label: t(activeLang,"powerLabel"),           control:{ intent:"tech", sub:"power" } },
-      { label: t(activeLang,"hotWaterLabel"),        control:{ intent:"tech", sub:"hot_water" } },
-      { label: t(activeLang,"acLabel"),              control:{ intent:"tech", sub:"ac" } },
-      { label: t(activeLang,"inductionLabel"),       control:{ intent:"tech", sub:"induction" } },
-      { label: t(activeLang,"hoodLabel"),            control:{ intent:"tech", sub:"hood" } },
-      { label: t(activeLang,"coffeeLabel"),          control:{ intent:"tech", sub:"coffee" } },
-      { label: t(activeLang,"fireAlarmLabel"),       control:{ intent:"tech", sub:"fire_alarm" } },
-      { label: t(activeLang,"elevatorPhoneLabel"),   control:{ intent:"tech", sub:"elevator_phone" } },
-      { label: t(activeLang,"safeLabel"),            control:{ intent:"tech", sub:"safe" } },
-      { label: t(activeLang,"spareKeyLabel"),        control:{ intent:"tech", sub:"keys" } },
+      flowNode("tech_wifi", { label: t(activeLang,"wifiLabel"), control:{ intent:"tech", sub:"wifi", kind:"wifi" } }),
+      flowNode("tech_power", { label: t(activeLang,"powerLabel"),           control:{ intent:"tech", sub:"power" } }),
+      flowNode("tech_hot_water", { label: t(activeLang,"hotWaterLabel"),        control:{ intent:"tech", sub:"hot_water" } }),
+      flowNode("tech_ac", { label: t(activeLang,"acLabel"),              control:{ intent:"tech", sub:"ac" } }),
+      flowNode("tech_induction", { label: t(activeLang,"inductionLabel"),       control:{ intent:"tech", sub:"induction" } }),
+      flowNode("tech_hood", { label: t(activeLang,"hoodLabel"),            control:{ intent:"tech", sub:"hood" } }),
+      flowNode("tech_coffee", { label: t(activeLang,"coffeeLabel"),          control:{ intent:"tech", sub:"coffee" } }),
+      flowNode("tech_fire_alarm", { label: t(activeLang,"fireAlarmLabel"),       control:{ intent:"tech", sub:"fire_alarm" } }),
+      flowNode("tech_elevator", { label: t(activeLang,"elevatorPhoneLabel"),   control:{ intent:"tech", sub:"elevator_phone" } }),
+      flowNode("tech_safe", { label: t(activeLang,"safeLabel"),            control:{ intent:"tech", sub:"safe" } }),
+      flowNode("tech_spare_key", { label: t(activeLang,"spareKeyLabel"),        control:{ intent:"tech", sub:"keys" } }),
     ];
 
     const TRANSPORT = [
-      { label: t(activeLang,"transportInfo"), control:{ intent:"tech", sub:"transport" } },
+      flowNode("transport_prague", { label: t(activeLang,"transportInfo"), control:{ intent:"tech", sub:"transport" } }),
     ];
 
     const AMENITIES = [
-      { label: t(activeLang,"aRooms"),   control:{ intent:"amenities", sub:"rooms" } },
-      { label: t(activeLang,"aKitchen"), control:{ intent:"amenities", sub:"kitchen" } },
-      { label: t(activeLang,"aBathroom"),control:{ intent:"amenities", sub:"bathroom" } },
-      { label: t(activeLang,"aService"), control:{ intent:"amenities", sub:"service" } },
+      flowNode("amenity_rooms", { label: t(activeLang,"aRooms"),   control:{ intent:"amenities", sub:"rooms" } }),
+      flowNode("amenity_kitchen", { label: t(activeLang,"aKitchen"), control:{ intent:"amenities", sub:"kitchen" } }),
+      flowNode("amenity_bathroom", { label: t(activeLang,"aBathroom"),control:{ intent:"amenities", sub:"bathroom" } }),
+      flowNode("amenity_service", { label: t(activeLang,"aService"), control:{ intent:"amenities", sub:"service" } }),
     ];
 
     const OTHER = [
-      { label: t(activeLang,"laundryLabel"),     control:{ intent:"tech", sub:"laundry" } },
-      { label: t(activeLang,"accessLabel"),      control:{ intent:"tech", sub:"access" } },
-      { label: t(activeLang,"smokingLabel"),     control:{ intent:"tech", sub:"smoking" } },
-      { label: t(activeLang,"luggageLabel"),     control:{ intent:"tech", sub:"luggage" } },
-      { label: t(activeLang,"doorbellsLabel"),   control:{ intent:"tech", sub:"doorbells" } },
-      { label: t(activeLang,"trashLabel"),       control:{ intent:"tech", sub:"trash" } },
-      { label: t(activeLang,"doctorLabel"),      control:{ intent:"tech", sub:"doctor" } },
-      { label: t(activeLang,"linenLabel"),       control:{ intent:"tech", sub:"linen_towels" } },
+      flowNode("other_laundry", { label: t(activeLang,"laundryLabel"),     control:{ intent:"tech", sub:"laundry" } }),
+      flowNode("other_access", { label: t(activeLang,"accessLabel"),      control:{ intent:"tech", sub:"access" } }),
+      flowNode("other_smoking", { label: t(activeLang,"smokingLabel"),     control:{ intent:"tech", sub:"smoking" } }),
+      flowNode("other_luggage", { label: t(activeLang,"luggageLabel"),     control:{ intent:"tech", sub:"luggage" } }),
+      flowNode("other_doorbells", { label: t(activeLang,"doorbellsLabel"),   control:{ intent:"tech", sub:"doorbells" } }),
+      flowNode("other_trash", { label: t(activeLang,"trashLabel"),       control:{ intent:"tech", sub:"trash" } }),
+      flowNode("other_doctor", { label: t(activeLang,"doctorLabel"),      control:{ intent:"tech", sub:"doctor" } }),
+      flowNode("other_linen", { label: t(activeLang,"linenLabel"),       control:{ intent:"tech", sub:"linen_towels" } }),
     ];
 
     return [
-      { label: t(activeLang,"instructionsLabel"), control:{ intent:"tech", sub:"stay_instructions" } },
-      { label: t(activeLang,"tourLabel"), action:"tour" },
-      { label: t(activeLang,"wifiLabel"), control:{ intent:"tech", sub:"wifi", kind:"wifi" } },
-      { label: t(activeLang,"catFood"),      children:FOOD },
-      { label: t(activeLang,"catTech"),      children:TECH },
-      { label: t(activeLang,"catTransport"), children:TRANSPORT },
-      { label: t(activeLang,"catAmenities"), children:AMENITIES },
-      { label: t(activeLang,"catOther"),     children:OTHER },
+      flowNode("stay_instructions", { label: t(activeLang,"instructionsLabel"), control:{ intent:"tech", sub:"stay_instructions" } }),
+      flowNode("tour_3d", { label: t(activeLang,"tourLabel"), action:"tour" }),
+      flowNode("wifi_quick", { label: t(activeLang,"wifiLabel"), control:{ intent:"tech", sub:"wifi", kind:"wifi" } }),
+      flowNode("cat_food", { label: t(activeLang,"catFood"),      children:FOOD }),
+      flowNode("cat_tech", { label: t(activeLang,"catTech"),      children:TECH }),
+      flowNode("cat_transport", { label: t(activeLang,"catTransport"), children:TRANSPORT }),
+      flowNode("cat_amenities", { label: t(activeLang,"catAmenities"), children:AMENITIES }),
+      flowNode("cat_other", { label: t(activeLang,"catOther"),     children:OTHER }),
     ];
   }
   const FLOWS = useMemo(() => (lang ? makeFlows(lang) : []), [lang]);
+
+  useEffect(() => {
+    const nid = pendingDeepLinkNid.current;
+    if (!nid || !lang || !FLOWS.length || deepLinkConsumed.current) return;
+    const ok = navigateFlowNid(nid, FLOWS, {
+      setStack,
+      setShortcutsOpen,
+      setWifiCtas,
+      scrollToMainNav,
+      onChipClick: (node) => onChipClickRef.current?.(node),
+    });
+    if (ok) {
+      deepLinkConsumed.current = true;
+      pendingDeepLinkNid.current = null;
+    } else {
+      pendingDeepLinkNid.current = null;
+    }
+  }, [lang, FLOWS]);
 
   const searchIndex = useMemo(
     () => (FLOWS.length ? enumerateFlowEntries(FLOWS) : []),
@@ -1340,6 +1629,12 @@ export default function App(){
       .slice(0, 12);
     return ranked;
   }, [lang, searchQuery, searchIndex]);
+
+  const searchFallbackEntries = useMemo(() => {
+    if (!searchIndex.length) return [];
+    const pick = (nid) => searchIndex.find((e) => e.node.nid === nid);
+    return [pick("wifi_quick"), pick("stay_instructions"), pick("cat_food")].filter(Boolean);
+  }, [searchIndex]);
 
   function renderAssistant(md){
     const src = typeof md === "string" ? md : "";
@@ -1416,6 +1711,7 @@ export default function App(){
         : payload;
 
     setLoading(true);
+    setConciergeError(null);
     try{
       const r = await fetch("/.netlify/functions/concierge", {
         method:"POST",
@@ -1432,8 +1728,30 @@ export default function App(){
         reply = t(lang ?? "en", "replyEmpty");
       }
       setChat((c) => [...c, { role:"assistant", content: reply }]);
+      if (r.ok) {
+        setConciergeError(null);
+        try {
+          if (typeof localStorage !== "undefined" && reply.trim()) {
+            localStorage.setItem(
+              LS_LAST_REPLY,
+              JSON.stringify({
+                reply: reply.slice(0, 16000),
+                ts: Date.now(),
+                lang: lang ?? "en",
+              })
+            );
+          }
+        } catch {
+          /* ignore */
+        }
+        return { ok: true };
+      }
+      setConciergeError({ kind: "http", status: r.status });
+      return { ok: false };
     }catch{
+      setConciergeError({ kind: "network" });
       setChat((c) => [...c, { role:"assistant", content: t(lang ?? "en", "replyNetwork") }]);
+      return { ok: false };
     }finally{ setLoading(false); }
   }
 
@@ -1471,16 +1789,50 @@ export default function App(){
     stack.length === 0 ? FLOWS :
     stack[stack.length - 1]?.children ?? FLOWS;
 
+  const recentList = useMemo(() => {
+    if (!FLOWS.length) return [];
+    return loadRecentNids()
+      .map((nid) => {
+        const path = findPathByNid(FLOWS, nid);
+        if (!path?.length) return null;
+        return { nid, label: path[path.length - 1].label };
+      })
+      .filter(Boolean);
+  }, [FLOWS, recentTick]);
+
+  const breadcrumbSegments = useMemo(() => {
+    if (!lang) return [];
+    const h = tUx(lang, "breadcrumbHome");
+    if (stack.length === 0) return [h];
+    return [h, ...stack.map((s) => s.label)];
+  }, [lang, stack]);
+
   const waUi = whatsappI18n[lang ?? "cs"] ?? whatsappI18n.en;
   const whatsappHref = `https://wa.me/${WHATSAPP_E164}?text=${encodeURIComponent(waUi.prefill)}`;
+  const whatsappErrorHref = useMemo(() => {
+    if (!conciergeError) return whatsappHref;
+    const tag =
+      conciergeError.kind === "network"
+        ? "\n[Concierge: network error]"
+        : `\n[Concierge: HTTP ${conciergeError.status}]`;
+    return `https://wa.me/${WHATSAPP_E164}?text=${encodeURIComponent(waUi.prefill + tag)}`;
+  }, [conciergeError, waUi.prefill, whatsappHref]);
   const bookingHref = lang === "cs" ? BOOKING_URL_CS : BOOKING_URL_INTL;
   const headerTb = lang ? topBarCopy(lang) : null;
 
   const ALL_SSIDS = ["D384","CDEA","CF2A","93EO","D93A","D9E4","6A04","9B7A","1CF8","D8C4","CD9E","CF20","23F0","B4B4","DA4E","D5F6"];
 
   const onChipClick = (n) => {
+    const bumpRecent = () => {
+      if (n.nid) {
+        pushRecentNid(n.nid);
+        setRecentTick((x) => x + 1);
+      }
+    };
+
     if (n.children) {
       setWifiCtas({ showPassword:false, showNotOk:false });
+      bumpRecent();
       return openNode(n);
     }
 
@@ -1488,22 +1840,28 @@ export default function App(){
       try { window.open(MATTERPORT_URL, "_blank", "noopener,noreferrer"); } catch {}
       setWifiCtas({ showPassword:false, showNotOk:false });
       setShortcutsOpen(false);
-      // tourOpenMsg ber jen z vybraného jazyka
+      pushRecentNid("tour_3d");
+      setRecentTick((x) => x + 1);
       setChat(c => [...c, { role:"assistant", content: tr[lang]?.tourOpenMsg || "Link" }]);
       return;
     }
 
     if (n.control?.kind === "wifi") {
       setShortcutsOpen(false);
-      sendControl("Wi-Fi", { intent:"tech", sub:"wifi" });
+      bumpRecent();
       setWifiCtas({ showPassword:true, showNotOk:false });
-      return;
+      return sendControl("Wi-Fi", { intent:"tech", sub:"wifi" }).then((res) => {
+        if (res?.ok) setSentToast(true);
+      });
     }
 
     if (n.control) {
       setShortcutsOpen(false);
       setWifiCtas({ showPassword:false, showNotOk:false });
-      return sendControl(n.label, n.control);
+      bumpRecent();
+      return sendControl(n.label, n.control).then((res) => {
+        if (res?.ok) setSentToast(true);
+      });
     }
   };
 
@@ -1597,6 +1955,8 @@ export default function App(){
     );
   };
 
+  onChipClickRef.current = onChipClick;
+
   return (
     <>
       <AppStyles />
@@ -1662,8 +2022,25 @@ export default function App(){
       </header>
 
       <div className={`row${lang ? "" : " rowLangOnly"}`} ref={mainColumnRef}>
+        {lang && !online && (
+          <div className="offlineBar" role="status">
+            {tUx(lang, "offlineBanner")}
+          </div>
+        )}
+        {lang && conciergeError && (
+          <div className="errorBar" role="alert">
+            <span>
+              {conciergeError.kind === "network"
+                ? t(lang, "replyNetwork")
+                : `⚠️ HTTP ${conciergeError.status}`}
+            </span>
+            <a href={whatsappErrorHref} target="_blank" rel="noopener noreferrer">
+              {tUx(lang, "errorWhatsappCta")}
+            </a>
+          </div>
+        )}
         {/* CHAT SCROLLER */}
-        <div className="scroller">
+        <div className="scroller scroller--elevated">
           {!lang && renderLangChooser()}
 
           {chat.map((m, i) => {
@@ -1690,6 +2067,8 @@ export default function App(){
             </div>
           )}
         </div>
+
+        {lang && <div className="sectionDivider" aria-hidden />}
 
         {/* Vyhledávání (po výběru jazyka) */}
         {lang && (
@@ -1721,11 +2100,37 @@ export default function App(){
                 />
               </div>
               {searchDropdownOpen && normalizeSearch(searchQuery).length >= 2 && (
-                <ul className="searchResults" role="listbox">
+                <ul
+                  className="searchResults"
+                  role="listbox"
+                  aria-label={tUx(lang, "ariaSearchResults")}
+                >
                   {searchHits.length === 0 ? (
-                    <li className="searchEmpty" role="option">
-                      {t(lang, "searchNoResults")}
-                    </li>
+                    <>
+                      <li className="searchEmpty" role="option">
+                        {t(lang, "searchNoResults")}
+                      </li>
+                      {searchFallbackEntries.length > 0 && (
+                        <li role="presentation">
+                          <div className="searchQuickPicks">
+                            <div className="searchQuickPicksLabel">
+                              {tUx(lang, "searchTryTitle")}
+                            </div>
+                            {searchFallbackEntries.map((hit) => (
+                              <button
+                                key={hit.node.nid || hit.node.label}
+                                type="button"
+                                className="searchQuickPickBtn"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => applySearchHit(hit)}
+                              >
+                                {hit.node.label}
+                              </button>
+                            ))}
+                          </div>
+                        </li>
+                      )}
+                    </>
                   ) : (
                     searchHits.map((hit, i) => (
                       <li key={`${hit.node.label}-${i}-${hit.score}`} role="option">
@@ -1753,9 +2158,53 @@ export default function App(){
 
         {/* ZKRATKY */}
         {lang && currentChildren && shortcutsOpen && (
-          <div className="shortcuts" ref={shortcutsRef}>
+          <div
+            className="shortcuts"
+            ref={shortcutsRef}
+            role="region"
+            aria-labelledby="shortcuts-heading"
+          >
+            <nav className="breadcrumbNav" aria-label={tUx(lang, "ariaBreadcrumb")}>
+              {breadcrumbSegments.map((seg, i) => (
+                <span key={`${i}-${seg}`}>
+                  {i > 0 && (
+                    <span className="crumbSep" aria-hidden>
+                      ›
+                    </span>
+                  )}
+                  {seg}
+                </span>
+              ))}
+            </nav>
+            {recentList.length > 0 && (
+              <div className="recentRow">
+                <p className="recentRowLabel">{tUx(lang, "recentTitle")}</p>
+                <div className="recentChips">
+                  {recentList.map((r) => (
+                    <button
+                      key={r.nid}
+                      type="button"
+                      className="recentChip"
+                      onClick={() => {
+                        navigateFlowNid(r.nid, FLOWS, {
+                          setStack,
+                          setShortcutsOpen,
+                          setWifiCtas,
+                          scrollToMainNav,
+                          onChipClick: (node) => onChipClick(node),
+                        });
+                      }}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="shortcutsHeader">
-              <strong>{stack.length === 0 ? t(lang,"mainTitle") : t(lang,"subTitle")}</strong>
+              <strong id="shortcuts-heading">
+                {stack.length === 0 ? t(lang, "mainTitle") : t(lang, "subTitle")}
+              </strong>
               <div className="btnRow">
                 {stack.length > 0 && (
                   <button
@@ -1794,7 +2243,7 @@ export default function App(){
             <div className="menuGrid">
               {currentChildren.map((n, idx) => (
                 <button
-                  key={idx}
+                  key={n.nid ?? `m-${idx}`}
                   type="button"
                   className="chipPrimary"
                   style={{ ["--btn"]: btnColorForIndex(idx) }}
@@ -1829,6 +2278,12 @@ export default function App(){
 
       </div>
       </div>
+
+      {sentToast && lang && (
+        <div className="toastBar" role="status">
+          {tUx(lang, "sentToast")}
+        </div>
+      )}
 
       <footer className="whatsappDock" role="contentinfo">
         <a
