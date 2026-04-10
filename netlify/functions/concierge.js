@@ -2,6 +2,7 @@
 // Čistě deterministická logika — bez OpenAI / bez externích AI volání.
 
 import { PLACES } from "./data/places.js";
+import { getContentPack, assistantSentWifiTroubleshoot } from "./i18n-content.js";
 
 /** ====== LOKÁLNÍ DATA ====== */
 const HOTEL = {
@@ -43,7 +44,7 @@ const KEYBOX = {
   "301": "3312","302": "3313","303": "3314","304": "3315","305": "3316",
 };
 
-/** ====== Krátké texty podle jazyka UI (nápověda zůstává v češtině) ====== */
+/** ====== Krátké texty podle jazyka UI (handoff, chyby, Wi‑Fi dotaz) ====== */
 const UI_STRINGS = {
   cs: {
     handoff:
@@ -51,6 +52,8 @@ const UI_STRINGS = {
       "Rád pomohu s ostatním (restaurace, doprava, doporučení v okolí, technické potíže mimo kódy).",
     ack: "Rozumím.",
     wifiAsk: "Napište prosím **číslo apartmánu** nebo **SSID** (4 znaky) – pošlu heslo.",
+    errorGeneric: "Omlouvám se, nastala chyba. Zkuste to prosím znovu.",
+    errorInvalidJson: "Neplatný JSON v požadavku.",
   },
   en: {
     handoff:
@@ -58,6 +61,8 @@ const UI_STRINGS = {
       "I can help with restaurants, transport, nearby tips, and technical topics that don't need private codes.",
     ack: "Understood.",
     wifiAsk: "Please send your **apartment number** or **SSID** (4 characters) — I'll send the password.",
+    errorGeneric: "Sorry, something went wrong. Please try again.",
+    errorInvalidJson: "Invalid JSON in the request.",
   },
   es: {
     handoff:
@@ -131,7 +136,7 @@ function normUiLang(uiLang) {
 
 function T(uiLang, key) {
   const pack = UI_STRINGS[normUiLang(uiLang)];
-  return pack[key] || UI_STRINGS.cs[key] || "";
+  return pack[key] || UI_STRINGS.en[key] || UI_STRINGS.cs[key] || "";
 }
 
 /** ====== BLOKACE TÉMAT ====== */
@@ -163,7 +168,7 @@ function historyContainsKeys(messages = []) {
   return /(náhradn|spare\s+key|zapomenut[ýy]\s+kl[ií]č|key[-\s]?box|schránk)/i.test(look);
 }
 function recentlySentWifiTroubleshoot(messages = []) {
-  return /Pokud Wi-?Fi nefunguje:/i.test(lastAssistant(messages) || "");
+  return assistantSentWifiTroubleshoot(lastAssistant(messages));
 }
 
 /** ====== IMG PATHS ====== */
@@ -195,218 +200,170 @@ const P = {
 const wifiByRoom = (room)=> WIFI.find(w=>w.room===room)||null;
 const wifiBySsid = (ssid)=> WIFI.find(w=>w.ssid===ssid)||null;
 
-const buildWifiTroubleshoot = () => [
-  "Pokud Wi-Fi nefunguje:",
-  "1) Zkontrolujte kabely u routeru.",
-  "2) Restartujte: vytáhněte napájecí kabel na 10 s, poté zapojte a vyčkejte 1–2 minuty.",
-  "3) Pokud to nepomůže, napište, jakou **jinou Wi-Fi** vidíte – pošlu k ní heslo.",
-  "👉 Pokud znáte **číslo apartmánu** nebo **SSID** (4 znaky), napište mi ho a pošlu heslo."
-].join("\n");
-const buildWifiCreds = (entry) => entry ? `**Wi-Fi:** SSID **${entry.ssid}**, heslo **${entry.pass}**.` : null;
+function buildWifiTroubleshoot(uiLang) {
+  return getContentPack(uiLang).wifiTrouble;
+}
+
+function buildWifiCreds(entry, uiLang) {
+  if (!entry) return null;
+  const p = getContentPack(uiLang);
+  return `**Wi-Fi:** SSID **${entry.ssid}**, ${p.wifiCredsPass} **${entry.pass}**.`;
+}
+
+function injectStayImages(stayRaw) {
+  const reps = {
+    "%%IMG_ENTRANCE%%": `![](${IMG(P.ENTRANCE)})`,
+    "%%IMG_LUGGAGE%%": `![](${IMG(P.LUGGAGE)})`,
+    "%%IMG_KEY_BOX%%": `![](${IMG(P.KEY_BOX)})`,
+    "%%IMG_MAIN_ENTRANCE%%": `![](${IMG(P.MAIN_ENTRANCE)})`,
+    "%%IMG_CHECKOUT_BOX%%": `![](${IMG(P.CHECKOUT_BOX)})`,
+  };
+  let s = stayRaw;
+  for (const [k, v] of Object.entries(reps)) s = s.split(k).join(v);
+  return s;
+}
 
 /** ====== QUICK-HELP ====== */
-function buildACHelp() {
+function buildACHelp(uiLang) {
+  const p = getContentPack(uiLang);
   return [
     `![](${IMG(P.AC)})`,
-    "U klimatizace zkontrolujte režim: ☀️ = topení, ❄️ = chlazení.",
+    p.ac[0],
     `![](${IMG(P.BALCONY)})`,
-    "Pokud **zelená kontrolka bliká**, je potřeba restart: na **2. patře** na balkoně jsou **AC vypínače**. Vypněte svůj na ~30 s a pak zapněte.",
-    "To obvykle problém vyřeší."
+    p.ac[1],
+    p.ac[2],
   ].join("\n");
 }
-function buildPowerHelp() {
+
+function buildPowerHelp(uiLang) {
+  const p = getContentPack(uiLang);
   return [
-    "Pokud vypadne elektřina v apartmánu:",
+    p.power[0],
     `![](${IMG(P.FUSE_IN_APT)})`,
-    "Nejdříve **zkontrolujte jističe v apartmánu** (malá bílá dvířka ve zdi).",
+    p.power[1],
     `![](${IMG(P.FUSE_APT)})`,
-    "Může to být **hlavní jistič apartmánu** u balkonu – pokud je **dole**, zvedněte ho nahoru."
+    p.power[2],
   ].join("\n");
 }
-const buildAccessibility = () => [
-  "Do budovy vedou **dva schody**. Do apartmánu **001** je **jeden schod**.",
-  "Jinak bez schodů a s **velkým výtahem**.",
-  "Ve sprchách je cca **30 cm** vysoký okraj vaničky."
-].join("\n");
-const buildSmoking = () => [
-  `![](${IMG(P.BALCONY)})`,
-  "Pro kouření využijte prosím **společné balkony** na každém patře naproti výtahu.",
-  "⚠️ **Neodklepávejte a nevyhazujte** nedopalky z balkonu – používejte popelník."
-].join("\n");
-const buildPets = () =>
-  "Domácí mazlíčci / psi jsou **vítáni a zdarma**. Prosíme, aby **nelezli na postele a gauče**.";
-const buildLaundry = () => [
-  `![](${IMG(P.LAUNDRY)})`,
-  "Prádelna je v **suterénu**, otevřena **non-stop** a **zdarma**. K dispozici jsou prostředky i **žehlička** (lze vzít na pokoj)."
-].join("\n");
+
+function buildAccessibility(uiLang) {
+  return getContentPack(uiLang).access;
+}
+
+function buildSmoking(uiLang) {
+  const p = getContentPack(uiLang);
+  return [`![](${IMG(P.BALCONY)})`, p.smoking].join("\n");
+}
+
+function buildPets(uiLang) {
+  return getContentPack(uiLang).pets;
+}
+
+function buildLaundry(uiLang) {
+  const p = getContentPack(uiLang);
+  return [`![](${IMG(P.LAUNDRY)})`, p.laundry].join("\n");
+}
 
 /** ====== ÚSCHOVNA + KLÍČ ====== */
-function buildLuggageInfo() {
+function buildLuggageInfo(uiLang) {
+  const p = getContentPack(uiLang);
+  const [a, b, c, d] = p.luggage;
   return [
-    "**Check-out je do 11:00** (přijíždějí noví hosté).",
+    a,
     `![](${IMG(P.CHECKOUT_BOX)})`,
-    "Nejprve prosím **vhoďte klíče do check-out boxu**.",
+    b,
     `![](${IMG(P.LUGGAGE)})`,
-    `Potom můžete **po 11:00** uložit zavazadla v **úschovně batožiny** – je v průjezdu **vedle schránky na klíče**.`,
-    `**Kód na číselníku u vchodu do průchodu je 3142#.** Po uložení prosím **zkontrolujte, že jsou dveře zavřené**.`
+    c,
+    d,
   ].join("\n");
 }
 
 /* === Bezpečná verze pro „Náhradní klíč“ – bez jakýchkoli kódů, ale s fotkami === */
-function buildKeyHelp() {
-  return [
-    `![](${IMG(P.LUGGAGE)})`,
-    `![](${IMG(P.SPARE_KEY)})`,
-    "Zapomenutý klíč:",
-    "1) V budově je k dispozici **úschovna s boxy na náhradní klíče**.",
-    "2) Pro vydání kódu se ověřuje host a číslo apartmánu.",
-    "**Pro kód od náhradního klíče kontaktujte Davida (WhatsApp +420 733 439 733).**"
-  ].join("\n");
+function buildKeyHelp(uiLang) {
+  const p = getContentPack(uiLang);
+  return [`![](${IMG(P.LUGGAGE)})`, `![](${IMG(P.SPARE_KEY)})`, ...p.key].join("\n");
 }
 
 /** ====== DALŠÍ INTERNÍ INFO ====== */
-const buildTrash = () => [
-  `![](${IMG(P.GARBAGE)})`,
-  "🗑️ **Popelnice** jsou **venku na dvoře**.",
-  "Až vyndáte **plný pytel** z vašeho odpadkového koše, **nový pytel** najdete **pod ním**."
-].join("\n");
-const buildDoorbells = () => [
-  `![](${IMG(P.DOOR_BELLS)})`,
-  "🔔 **Zvonky na apartmány**: můžete zazvonit vašim blízkým domovními zvonky.",
-  "Jsou **na začátku průchodu z ulice**."
-].join("\n");
-const buildElevatorPhone = () =>
-  "🛗 **Výtah – servis/porucha**: zavolejte **00420 775 784 446** (uveďte Sokolská 64, Praha 2).";
-const buildFireAlarm = () => [
-  "🔥 **Požární hlásič**:",
-  "Pokud **nehoří** (jen se připálilo jídlo), na **přízemí za výtahem** je **dlouhá tyč**.",
-  "Tou **zamáčkněte tlačítko uprostřed hlásiče** a vyvětrejte."
-].join("\n");
-const buildLinenTowels = () => [
-  "🧺 **Povlečení / ručníky**:",
-  "Potřebujete-li **čisté prostěradlo/povlečení/ručník/toaletní papír**, na **každém patře** je **skříň**.",
-  "Otevřete ji kódem **526** a vezměte jen potřebné množství."
-].join("\n");
-const buildDoctor = () =>
-  "👩‍⚕️ **Lékař 24/7**: **+420 603 433 833**, **+420 603 481 361**. Uveďte adresu a apartmán.";
-const buildCoffee = () => [
-  "☕ **Kávovar Tchibo**:",
-  "– Nejčastěji je **plná nádoba na sedliny** → vyprázdnit.",
-  "– Pokud nepomůže, **očistěte senzor nádoby** (uvnitř nad nádobou). Stačí prstem lehce očistit.",
-].join("\n");
-const buildHotWater = () =>
-  "💧 **Nejde teplá voda**: prosím **počkejte až 20 minut**, než se v bojleru ohřeje nová. Pokud ani potom neteče, napište mi čas a apartmán.";
-const buildInduction = () => [
-  "🍳 **Indukce**:",
-  "– „**L**“ = dětská pojistka → podržte **Child Lock** (vedle Zap/Vyp) pár sekund, až zmizí.",
-  "– „**F**“ = použijte **indukční nádobí** (magnetické dno, dostatečný průměr).",
-].join("\n");
-const buildHood = () =>
-  "🔆 **Digestoř**: vysuňte ji dopředu; **tlačítka jsou vpravo** po vysunutí.";
-const buildSafe = () => [
-  "🔐 **Trezor**:",
-  "– Je-li zamčený a nevíte kód, kontaktujte prosím **Davida** (WhatsApp +420 733 439 733).",
-  "– Pro nastavení: uvnitř dveří stiskněte **červené tlačítko**, zadejte kód (≥3 číslice), stiskněte **tlačítko zámku**, zavřete dveře.",
-].join("\n");
-
-/** ====== NOVÁ SEKCE – „Instrukce k ubytování“ ====== */
-function buildStayInstructions() {
-  return [
-    "## Instrukce k ubytování",
-    "",
-    "### Check-in & klíče",
-    `![](${IMG(P.ENTRANCE)})`,
-    "**Check-in:** od **14:00** (dříve, pokud je apartmán připraven).",
-    "Pokud přijedete **před 11:00**, využijte prosím **úschovnu zavazadel** vedle schránek na klíče. Kód **3142#**.",
-    `![](${IMG(P.LUGGAGE)})`,
-    "",
-    "**Po 11:00:**",
-    "- Pokud je apartmán už uklizený, můžete zůstat přímo uvnitř.",
-    "- Pokud ještě uklizený není, můžete si v něm nechat zavazadla a vrátit se později.",
-    "",
-    "**Schránka na klíče:** bílá schránka v průchodu do dvora.",
-    "Číslo schránky a kód vám **pošle / poslal David**.",
-    "Uvnitř: **klíč** a **čip** (vchodové dveře přes senzor).",
-    "Po vyzvednutí prosím schránku **zavřete** a **nepoužívejte** ji během pobytu jako úložiště.",
-    `![](${IMG(P.KEY_BOX)})`,
-    `![](${IMG(P.MAIN_ENTRANCE)})`,
-    "",
-    "### Check-out & zavazadla",
-    "**Check-out:** do **11:00**.",
-    "Prosím, opusťte apartmán **nejpozději do 11:00**.",
-    "Hotel má plnou obsazenost a noví hosté obvykle **přijíždějí** brzy po poledni, takže bohužel **není možné** nabídnout pozdní odjezd (late check-out).",
-    "",
-    "Klíč prosím vhoďte do **bílé poštovní schránky** v přízemí, **naproti výtahu** (uvnitř budovy).",
-    `![](${IMG(P.CHECKOUT_BOX)})`,
-    "**Úschovnu zavazadel** můžete využít i po check-outu.",
-  ].join("\n");
+function buildTrash(uiLang) {
+  const p = getContentPack(uiLang);
+  return [`![](${IMG(P.GARBAGE)})`, p.trash].join("\n");
 }
 
-/** ====== NOVÉ SEKCÍ – DOPRAVA & JÍDLO DOMŮ ====== */
-const buildTransport = () => [
-  "🗺️ **Doprava po Praze**",
-  "– Většinu míst zvládnete **pěšky**. Na **Staroměstské náměstí ~15 min**, na **Pražský hrad ~1 hod** pěšky.",
-  "– **Hlavní nádraží** je asi **10 min** chůzí.",
-  "– **Jízdenku** koupíte **bezkontaktní kartou** přímo **u prostředních dveří** tramvaje.",
-  "– Na **Pražský hrad** jede **tram 22** z **I. P. Pavlova** (cca **100 m** od nás)."
-].join("\n");
+function buildDoorbells(uiLang) {
+  const p = getContentPack(uiLang);
+  return [`![](${IMG(P.DOOR_BELLS)})`, p.doorbells].join("\n");
+}
 
-const buildFoodDelivery = () => [
-  "🛵 **Jídlo domů**",
-  "Můžete si objednat přímo na apartmán přes **Foodora** nebo **Wolt**.",
-  "- [Foodora](https://www.foodora.cz/)\n- [Wolt](https://wolt.com/)"
-].join("\n");
+function buildElevatorPhone(uiLang) {
+  return getContentPack(uiLang).elevator;
+}
+
+function buildFireAlarm(uiLang) {
+  return getContentPack(uiLang).fire;
+}
+
+function buildLinenTowels(uiLang) {
+  return getContentPack(uiLang).linen;
+}
+
+function buildDoctor(uiLang) {
+  return getContentPack(uiLang).doctor;
+}
+
+function buildCoffee(uiLang) {
+  return getContentPack(uiLang).coffee;
+}
+
+function buildHotWater(uiLang) {
+  return getContentPack(uiLang).hotWater;
+}
+
+function buildInduction(uiLang) {
+  return getContentPack(uiLang).induction;
+}
+
+function buildHood(uiLang) {
+  return getContentPack(uiLang).hood;
+}
+
+function buildSafe(uiLang) {
+  return getContentPack(uiLang).safe;
+}
+
+function buildStayInstructions(uiLang) {
+  return injectStayImages(getContentPack(uiLang).stayRaw);
+}
+
+function buildTransport(uiLang) {
+  return getContentPack(uiLang).transport;
+}
+
+function buildFoodDelivery(uiLang) {
+  return getContentPack(uiLang).foodDelivery;
+}
 
 /** ====== VYBAVENÍ HOTELU ====== */
-function buildAmenitiesRooms(){
-  return [
-    "## Vybavení hotelu — Pokoje",
-    "- Postele jsou **povlečené**",
-    "- **Různé velikosti polštářů**",
-    "- **Televize**",
-    "- **Gauč**",
-    "- **Klimatizace**",
-    "- **Vyhřívání klimatizací**",
-    "- **Skříně**",
-    "- **Ztmavovací závěsy**",
-  ].join("\n");
+function buildAmenitiesRooms(uiLang) {
+  return getContentPack(uiLang).amenitiesRooms;
 }
-function buildAmenitiesKitchen(){
-  return [
-    "## Vybavení hotelu — Kuchyň",
-    "- **Nádobí**",
-    "- **Kávovar**",
-    "- **Káva**",
-    "- **Příbory**",
-    "- **Mikrovlnka**",
-    "- **Lednice**",
-    "- **Indukční deska**",
-    "- **Trouba**",
-    "- **Tablety do myčky**",
-    "- **Myčka**",
-  ].join("\n");
+
+function buildAmenitiesKitchen(uiLang) {
+  return getContentPack(uiLang).amenitiesKitchen;
 }
-function buildAmenitiesBathroom(){
-  return [
-    "## Vybavení hotelu — Koupelna",
-    "- **Koupelna**",
-    "- **Záchod**",
-    "- **Toaletní papír**",
-    "- **Mýdlo**",
-    "- **Pleťový krém**",
-    "- **Sprchový gel**",
-    "- **Šampon**",
-    "- **Ručníky**",
-    "- **Osušky**",
-  ].join("\n");
+
+function buildAmenitiesBathroom(uiLang) {
+  return getContentPack(uiLang).amenitiesBathroom;
 }
-function buildAmenitiesService(){
+
+function buildAmenitiesService(uiLang) {
+  const p = getContentPack(uiLang);
   return [
-    "## Vybavení hotelu — Prádelna, úschovna zavazadel, odpadky",
-    buildLaundry(),
-    buildLuggageInfo(),
-    buildTrash(),
-    "- **Náhradní odpadkové pytle**: po vyjmutí plného pytle je **nový pytel pod ním**.",
+    p.amenitiesServiceTitle,
+    buildLaundry(uiLang),
+    buildLuggageInfo(uiLang),
+    buildTrash(uiLang),
+    p.amenitiesServiceExtra,
   ].join("\n\n");
 }
 
@@ -470,7 +427,7 @@ function isKeysFollowUp(messages = []) {
   const lu = (lastUser(messages) || "").trim();
 
   const assistantWasKeys =
-    /Zapomenutý klíč|Náhradní klíč|Spare key/i.test(la) ||
+    /Zapomenutý klíč|Náhradní klíč|Spare key|Forgotten key/i.test(la) ||
     (la.includes("/help/spare-key.jpg") ||
       la.includes("/help/key-box-wall.jpg") ||
       la.includes("Key-box.jpg"));
@@ -562,7 +519,7 @@ function runConcierge(body) {
 
     // 0) Follow-up: číslo pokoje po „Náhradní klíč“ – vrací bezpečný návod (bez kódů)
     if (isKeysFollowUp(messages)) {
-      return buildKeyHelp();
+      return buildKeyHelp(uiLang);
     }
 
     // 1) CONTROL – pevná tlačítka
@@ -615,31 +572,31 @@ function runConcierge(body) {
       if (control.intent === "tech") {
         const sub = String(control.sub || "").toLowerCase();
         const map = {
-          stay_instructions: buildStayInstructions,
-          instructions:       buildStayInstructions,
+          stay_instructions: () => buildStayInstructions(uiLang),
+          instructions: () => buildStayInstructions(uiLang),
 
-          wifi: buildWifiTroubleshoot,
-          power: buildPowerHelp,
-          ac: buildACHelp,
-          hot_water: buildHotWater,
-          induction: buildInduction,
-          hood: buildHood,
-          coffee: buildCoffee,
-          fire_alarm: buildFireAlarm,
-          elevator_phone: buildElevatorPhone,
-          luggage: buildLuggageInfo,
-          keys: () => buildKeyHelp(),
-          doorbells: buildDoorbells,
-          trash: buildTrash,
-          laundry: buildLaundry,
-          access: buildAccessibility,
-          smoking: buildSmoking,
-          pets: buildPets,
-          linen_towels: buildLinenTowels,
-          doctor: buildDoctor,
-          safe: buildSafe,
-          transport: buildTransport,
-          food_delivery: buildFoodDelivery,
+          wifi: () => buildWifiTroubleshoot(uiLang),
+          power: () => buildPowerHelp(uiLang),
+          ac: () => buildACHelp(uiLang),
+          hot_water: () => buildHotWater(uiLang),
+          induction: () => buildInduction(uiLang),
+          hood: () => buildHood(uiLang),
+          coffee: () => buildCoffee(uiLang),
+          fire_alarm: () => buildFireAlarm(uiLang),
+          elevator_phone: () => buildElevatorPhone(uiLang),
+          luggage: () => buildLuggageInfo(uiLang),
+          keys: () => buildKeyHelp(uiLang),
+          doorbells: () => buildDoorbells(uiLang),
+          trash: () => buildTrash(uiLang),
+          laundry: () => buildLaundry(uiLang),
+          access: () => buildAccessibility(uiLang),
+          smoking: () => buildSmoking(uiLang),
+          pets: () => buildPets(uiLang),
+          linen_towels: () => buildLinenTowels(uiLang),
+          doctor: () => buildDoctor(uiLang),
+          safe: () => buildSafe(uiLang),
+          transport: () => buildTransport(uiLang),
+          food_delivery: () => buildFoodDelivery(uiLang),
         };
         const fn = map[sub];
         const text = fn ? fn() : T(uiLang, "handoff");
@@ -650,10 +607,10 @@ function runConcierge(body) {
       if (control.intent === "amenities") {
         const sub = String(control.sub || "").toLowerCase();
         const map = {
-          rooms: buildAmenitiesRooms,
-          kitchen: buildAmenitiesKitchen,
-          bathroom: buildAmenitiesBathroom,
-          service: buildAmenitiesService,
+          rooms: () => buildAmenitiesRooms(uiLang),
+          kitchen: () => buildAmenitiesKitchen(uiLang),
+          bathroom: () => buildAmenitiesBathroom(uiLang),
+          service: () => buildAmenitiesService(uiLang),
         };
         const fn = map[sub];
         const text = fn ? fn() : T(uiLang, "handoff");
@@ -662,8 +619,7 @@ function runConcierge(body) {
 
       // d) NOVÉ: Instrukce k ubytování
       if (control.intent === "stay" && String(control.sub || "").toLowerCase() === "instructions") {
-        const text = buildStayInstructions();
-        return text;
+        return buildStayInstructions(uiLang);
       }
     }
 
@@ -681,33 +637,33 @@ function runConcierge(body) {
       const ssid = extractSSID(userText);
       const entry = room ? wifiByRoom(room) : (ssid ? wifiBySsid(ssid) : null);
 
-      if (entry) return buildWifiCreds(entry);
+      if (entry) return buildWifiCreds(entry, uiLang);
       const reply = recentlySentWifiTroubleshoot(messages)
         ? T(uiLang, "wifiAsk")
-        : buildWifiTroubleshoot();
+        : buildWifiTroubleshoot(uiLang);
       return reply;
     }
 
-    if (intent === "stay_instructions")  return buildStayInstructions();
-    if (intent === "ac")               return buildACHelp();
-    if (intent === "power")            return buildPowerHelp();
-    if (intent === "access")           return buildAccessibility();
-    if (intent === "smoking")          return buildSmoking();
-    if (intent === "pets")             return buildPets();
-    if (intent === "laundry")          return buildLaundry();
-    if (intent === "luggage")          return buildLuggageInfo();
-    if (intent === "keys")             return buildKeyHelp();
-    if (intent === "trash")            return buildTrash();
-    if (intent === "doorbells")        return buildDoorbells();
-    if (intent === "elevator_phone")   return buildElevatorPhone();
-    if (intent === "fire_alarm")       return buildFireAlarm();
-    if (intent === "linen_towels")     return buildLinenTowels();
-    if (intent === "doctor")           return buildDoctor();
-    if (intent === "coffee")           return buildCoffee();
-    if (intent === "hot_water")        return buildHotWater();
-    if (intent === "induction")        return buildInduction();
-    if (intent === "hood")             return buildHood();
-    if (intent === "safe")             return buildSafe();
+    if (intent === "stay_instructions") return buildStayInstructions(uiLang);
+    if (intent === "ac") return buildACHelp(uiLang);
+    if (intent === "power") return buildPowerHelp(uiLang);
+    if (intent === "access") return buildAccessibility(uiLang);
+    if (intent === "smoking") return buildSmoking(uiLang);
+    if (intent === "pets") return buildPets(uiLang);
+    if (intent === "laundry") return buildLaundry(uiLang);
+    if (intent === "luggage") return buildLuggageInfo(uiLang);
+    if (intent === "keys") return buildKeyHelp(uiLang);
+    if (intent === "trash") return buildTrash(uiLang);
+    if (intent === "doorbells") return buildDoorbells(uiLang);
+    if (intent === "elevator_phone") return buildElevatorPhone(uiLang);
+    if (intent === "fire_alarm") return buildFireAlarm(uiLang);
+    if (intent === "linen_towels") return buildLinenTowels(uiLang);
+    if (intent === "doctor") return buildDoctor(uiLang);
+    if (intent === "coffee") return buildCoffee(uiLang);
+    if (intent === "hot_water") return buildHotWater(uiLang);
+    if (intent === "induction") return buildInduction(uiLang);
+    if (intent === "hood") return buildHood(uiLang);
+    if (intent === "safe") return buildSafe(uiLang);
 
     if (intent === "local") {
       let sub = detectLocalSubtype(userText);
@@ -738,7 +694,7 @@ function runConcierge(body) {
 
   } catch (e) {
     console.error(e);
-    return "Omlouvám se, nastala chyba. Zkuste to prosím znovu.";
+    return T(uiLang, "errorGeneric");
   }
 }
 
@@ -774,7 +730,7 @@ export const handler = async (event, context) => {
     return {
       statusCode: 400,
       headers: { "content-type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ reply: "Neplatný JSON v požadavku." }),
+      body: JSON.stringify({ reply: T(body?.uiLang, "errorInvalidJson") }),
     };
   }
   try {
@@ -791,7 +747,7 @@ export const handler = async (event, context) => {
       statusCode: 200,
       headers: { "content-type": "application/json; charset=utf-8" },
       body: JSON.stringify({
-        reply: "Omlouvám se, nastala chyba. Zkuste to prosím znovu.",
+        reply: T(body?.uiLang, "errorGeneric"),
       }),
     };
   }
