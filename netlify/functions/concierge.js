@@ -2,7 +2,11 @@
 // Čistě deterministická logika — bez OpenAI / bez externích AI volání.
 
 import { PLACES } from "./data/places.js";
-import { getContentPack, assistantSentWifiTroubleshoot } from "./i18n-content.js";
+import {
+  getContentPack,
+  assistantSentWifiTroubleshoot,
+  assistantMessageContainsKeyHelp,
+} from "./i18n-content.js";
 
 /** ====== LOKÁLNÍ DATA ====== */
 const HOTEL = {
@@ -427,7 +431,7 @@ function isKeysFollowUp(messages = []) {
   const lu = (lastUser(messages) || "").trim();
 
   const assistantWasKeys =
-    /Zapomenutý klíč|Náhradní klíč|Spare key|Forgotten key/i.test(la) ||
+    assistantMessageContainsKeyHelp(la) ||
     (la.includes("/help/spare-key.jpg") ||
       la.includes("/help/key-box-wall.jpg") ||
       la.includes("Key-box.jpg"));

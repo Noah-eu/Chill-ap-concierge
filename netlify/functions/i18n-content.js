@@ -1,16 +1,14 @@
 /**
  * Dlouhé instrukce pro concierge podle jazyka UI.
- * cs = čeština; všechny ostatní kódy z aplikace dostanou angličtinu (dokud nepřidáme další jazyky).
+ * Kódy shodné s aplikací: cs, en, es, de, fr, ru, uk, nl, it, da, pl.
  */
 
-export function getContentPack(uiLang) {
-  return String(uiLang || "").toLowerCase() === "cs" ? CS : EN;
-}
+import { EXTRA_PACKS } from "./i18n-packs-extra.js";
 
-/** Detekce „už jsme poslali Wi-Fi troubleshooting“ (čeština + angličtina). */
-export function assistantSentWifiTroubleshoot(text) {
-  const t = text || "";
-  return /Pokud Wi-?Fi nefunguje:/i.test(t) || /If Wi-?Fi isn['']t working:/i.test(t);
+function firstLine(text) {
+  const t = String(text || "").trim();
+  const n = t.indexOf("\n");
+  return n === -1 ? t : t.slice(0, n).trim();
 }
 
 const CS = {
@@ -368,3 +366,35 @@ const EN = {
   amenitiesServiceExtra:
     "- **Spare bin bags**: after removing a full bag, a **new bag is underneath**.",
 };
+
+const PACK_BY_LANG = { cs: CS, en: EN, ...EXTRA_PACKS };
+
+let _wifiIntroLines = null;
+
+export function getContentPack(uiLang) {
+  const c = String(uiLang || "").toLowerCase();
+  return PACK_BY_LANG[c] || EN;
+}
+
+/** První řádek Wi‑Fi návodu se liší podle jazyka — porovnáváme přesně vůči všem balíčkům. */
+export function assistantSentWifiTroubleshoot(text) {
+  if (!_wifiIntroLines) {
+    _wifiIntroLines = new Set(
+      Object.values(PACK_BY_LANG).map((p) => firstLine(p.wifiTrouble))
+    );
+  }
+  return _wifiIntroLines.has(firstLine(text));
+}
+
+let _keyHelpPhrases = null;
+
+/** Text nápovědy k zapomenutému klíči (po obrázcích) obsahuje charakteristickou větu podle jazyka. */
+export function assistantMessageContainsKeyHelp(text) {
+  if (!_keyHelpPhrases) {
+    _keyHelpPhrases = Object.values(PACK_BY_LANG).map((p) =>
+      String(p.key[0] || "").replace(/:\s*$/, "").trim()
+    );
+  }
+  const t = text || "";
+  return _keyHelpPhrases.some((phrase) => phrase && t.includes(phrase));
+}
