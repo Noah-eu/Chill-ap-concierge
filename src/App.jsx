@@ -183,6 +183,21 @@ const AppStyles = () => (
       }
       .offlineBar{color:#fcd34d;background:rgba(251,191,36,.12)}
       .errorBar{color:#fecaca}
+      .essentialsTile{
+        color:#dff8f3;
+        border-color:color-mix(in oklab,var(--btn,var(--accent)),white 26%);
+        background:linear-gradient(168deg,
+          color-mix(in oklab,var(--btn,var(--accent)),black 52%) 0%,
+          color-mix(in oklab,var(--btn,var(--accent)),black 68%) 100%);
+        box-shadow:
+          0 1px 0 rgba(255,255,255,.1) inset,
+          0 8px 22px color-mix(in oklab,var(--btn,var(--accent)),transparent 48%),
+          0 2px 10px rgba(0,0,0,.4);
+      }
+      .essentialsTile:hover,.essentialsTile:focus-visible{
+        border-color:color-mix(in oklab,var(--btn,var(--accent)),#a5b4fc 38%);
+        filter:brightness(1.07);
+      }
     }
 
     #root{font-family:var(--font-app)}
@@ -331,19 +346,38 @@ const AppStyles = () => (
     .recentChip:hover,.recentChip:focus-visible{border-color:var(--accent);outline:none}
 
     .essentialsGrid{
-      display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 10px;
     }
     .essentialsTile{
-      appearance:none;font-family:var(--font-app);font-size:.88rem;font-weight:800;
-      min-height:56px;padding:14px 12px;border-radius:14px;
-      border:1px solid color-mix(in oklab,var(--btn,var(--accent)),transparent 40%);
-      background:linear-gradient(180deg,var(--surface),var(--surface-2));color:var(--accent-2);
-      cursor:pointer;text-align:center;line-height:1.25;touch-action:manipulation;
+      appearance:none;font-family:var(--font-app);font-size:.9rem;font-weight:800;
+      min-height:58px;padding:14px 12px;border-radius:16px;cursor:pointer;
+      text-align:center;line-height:1.25;touch-action:manipulation;
+      border:2px solid color-mix(in oklab,var(--btn,var(--accent)),transparent 18%);
+      color:color-mix(in oklab,var(--btn,var(--accent)),black 52%);
+      background:linear-gradient(168deg,
+        color-mix(in oklab,var(--btn,var(--accent)),white 78%) 0%,
+        color-mix(in oklab,var(--btn,var(--accent)),white 90%) 48%,
+        color-mix(in oklab,var(--btn,var(--accent)),white 82%) 100%);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.55) inset,
+        0 6px 16px color-mix(in oklab,var(--btn,var(--accent)),transparent 72%),
+        0 2px 6px rgba(15,20,25,.06);
+      transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease,filter .12s ease;
     }
     .essentialsTile:hover,.essentialsTile:focus-visible{
-      border-color:var(--accent);outline:none;
-      background:color-mix(in oklab,var(--accent),transparent 88%);
+      outline:none;
+      filter:brightness(1.02);
+      border-color:color-mix(in oklab,var(--btn,var(--accent)),#6366f1 28%);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.65) inset,
+        0 8px 22px color-mix(in oklab,var(--btn,var(--accent)),transparent 58%),
+        0 0 0 1px color-mix(in oklab,#6366f1,transparent 82%),
+        0 3px 8px rgba(15,20,25,.08);
     }
+    .essentialsTile:focus-visible{
+      outline:2px solid color-mix(in oklab,var(--btn,var(--accent)),#6366f1 35%);outline-offset:2px;
+    }
+    .essentialsTile:active{transform:scale(.985);filter:brightness(.98)}
     .essentialsAllTopicsBtn{
       display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;
       margin:8px 0 18px;padding:16px 20px;border-radius:16px;cursor:pointer;touch-action:manipulation;
