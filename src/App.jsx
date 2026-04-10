@@ -105,6 +105,7 @@ const AppStyles = () => (
       min-height:46px;padding:12px 18px;border-radius:14px;
       font-family:var(--font-app);
       font-weight:800;font-size:.92rem;letter-spacing:.02em;
+      text-shadow:0 1px 0 rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.2);
       text-decoration:none;color:#fff;text-align:center;
       background:linear-gradient(165deg,#a855f7,#7c3aed);
       border:1px solid color-mix(in oklab,#6d28d9,black 12%);
@@ -203,6 +204,7 @@ const AppStyles = () => (
       border-bottom-width:3px;
       background:linear-gradient(165deg,color-mix(in oklab,var(--btn),white 10%),var(--btn));
       color:#fff;font-weight:700;font-size:.93rem;letter-spacing:.01em;
+      text-shadow:0 1px 0 rgba(0,0,0,.28),0 2px 10px rgba(0,0,0,.22);
       box-shadow:0 4px 0 color-mix(in oklab,var(--btn),black 22%), 0 8px 20px color-mix(in oklab,var(--btn),transparent 70%);
       cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease,border-bottom-width .12s ease;text-align:center;
       touch-action:manipulation;
@@ -264,10 +266,13 @@ const AppStyles = () => (
     .menuGrid .chipPrimary{
       color:#fff;
       border:1px solid color-mix(in oklab,var(--btn),black 18%);
-      background:linear-gradient(155deg,color-mix(in oklab,var(--btn),white 14%) 0%,var(--btn) 48%,color-mix(in oklab,var(--btn),black 8%) 100%);
+      background:linear-gradient(155deg,color-mix(in oklab,var(--btn),white 18%) 0%,var(--btn) 42%,color-mix(in oklab,var(--btn),black 10%) 100%);
+      text-shadow:0 1px 0 rgba(0,0,0,.32),0 2px 6px rgba(0,0,0,.25),0 0 1px rgba(0,0,0,.4);
       box-shadow:
-        0 1px 0 rgba(255,255,255,.22) inset,
-        0 6px 18px color-mix(in oklab,var(--btn),transparent 58%);
+        0 1px 0 rgba(255,255,255,.28) inset,
+        0 2px 0 rgba(255,255,255,.08) inset,
+        0 8px 22px color-mix(in oklab,var(--btn),transparent 52%),
+        0 4px 14px rgba(15,20,25,.12);
     }
     .menuGrid .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 24px color-mix(in oklab,var(--btn),transparent 50%)}
     .menuGrid .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
@@ -404,6 +409,7 @@ const AppStyles = () => (
       font-weight:800;
       font-size:.95rem;
       letter-spacing:.02em;
+      text-shadow:0 1px 0 rgba(0,0,0,.22),0 2px 10px rgba(0,0,0,.18);
       text-decoration:none;
       box-shadow:0 6px 22px rgba(18,140,126,.4);
       transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
@@ -446,6 +452,7 @@ const AppStyles = () => (
     .pill.active{
       border-color:color-mix(in oklab,var(--accent),black 10%);
       background:linear-gradient(165deg,var(--accent),var(--accent-2));color:#fff;
+      text-shadow:0 1px 0 rgba(0,0,0,.25),0 1px 6px rgba(0,0,0,.2);
     }
 
     .fabStack{
@@ -458,6 +465,7 @@ const AppStyles = () => (
     .fabAction{
       appearance:none;border:none;border-radius:var(--radius-btn);padding:15px 22px;min-height:52px;
       font-family:var(--font-app);font-weight:700;font-size:.95rem;
+      text-shadow:0 1px 0 rgba(0,0,0,.28),0 2px 10px rgba(0,0,0,.2);
       background:linear-gradient(165deg,var(--accent),var(--accent-2));
       color:#fff;
       box-shadow:0 4px 0 color-mix(in oklab,var(--accent-2),black 15%), 0 14px 32px rgba(13,148,136,.32);
@@ -470,6 +478,7 @@ const AppStyles = () => (
       bottom:calc(var(--whatsapp-dock) + 100px + env(safe-area-inset-bottom, 0px));z-index:1140;
       appearance:none;border:none;border-radius:var(--radius-btn);
       font-family:var(--font-app);
+      text-shadow:0 1px 0 rgba(0,0,0,.3),0 2px 8px rgba(0,0,0,.22);
       padding:13px 18px;min-height:48px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
       box-shadow:0 4px 0 color-mix(in oklab,var(--danger),black 18%), 0 12px 28px rgba(220,38,38,.32);
       background:linear-gradient(165deg,#ef4444,#dc2626);
@@ -599,7 +608,7 @@ function topBarCopy(code) {
 const tr = {
   cs:{ chooseLang:"Zvolte jazyk", mainTitle:"Vyberte téma", subTitle:"Podtéma / Subtopic", back:"← Zpět",
        instructionsLabel:"📄 Instrukce k ubytování",
-       catFood:"Jídlo a okolí", catTech:"Technické potíže", catOther:"Ostatní", catTransport:"Doprava", catAmenities:"Vybavení hotelu",
+       catFood:"🍽️ Jídlo a okolí", catTech:"🔧 Technické potíže", catOther:"📋 Ostatní", catTransport:"🚌 Doprava", catAmenities:"🏨 Vybavení hotelu",
        tourLabel:"🧭 3D prohlídka hotelu", tourOpenMsg:"[Otevřít 3D prohlídku]("+MATTERPORT_URL+")",
        stillAsk:"Vyberte jednu z možností níže.",
        contact:"Pokud jste nenašli, co potřebujete, napište Davidovi (WhatsApp +420 733 439 733).",
@@ -625,7 +634,7 @@ const tr = {
 
   en:{ chooseLang:"Choose a language", mainTitle:"Pick a topic", subTitle:"Subtopic", back:"← Back",
        instructionsLabel:"📄 Check-in instructions",
-       catFood:"Food & Nearby", catTech:"Technical issues", catOther:"Other", catTransport:"Transport", catAmenities:"Hotel amenities",
+       catFood:"🍽️ Food & Nearby", catTech:"🔧 Technical issues", catOther:"📋 Other", catTransport:"🚌 Transport", catAmenities:"🏨 Hotel amenities",
        tourLabel:"🧭 3D virtual tour", tourOpenMsg:"[Open the 3D tour]("+MATTERPORT_URL+")",
        stillAsk:"Pick one of the options below.",
        contact:"If you can’t find what you need, message David (WhatsApp +420 733 439 733).",
@@ -652,7 +661,7 @@ const tr = {
   // Další jazyky – UI bere přesně zvolený jazyk:
   es:{ chooseLang:"Elige un idioma", mainTitle:"Elige un tema", subTitle:"Subtema", back:"← Atrás",
        instructionsLabel:"📄 Instrucciones de check-in",
-       catFood:"Comida y alrededores", catTech:"Problemas técnicos", catOther:"Otros", catTransport:"Transporte", catAmenities:"Servicios del hotel",
+       catFood:"🍽️ Comida y alrededores", catTech:"🔧 Problemas técnicos", catOther:"📋 Otros", catTransport:"🚌 Transporte", catAmenities:"🏨 Servicios del hotel",
        tourLabel:"🧭 Tour virtual 3D", tourOpenMsg:"[Abrir el tour 3D]("+MATTERPORT_URL+")",
        stillAsk:"Elige una de las opciones abajo.",
        contact:"Si no encuentras lo que necesitas, escribe a David (WhatsApp +420 733 439 733).",
@@ -678,7 +687,7 @@ const tr = {
 
   de:{ chooseLang:"Sprache auswählen", mainTitle:"Thema wählen", subTitle:"Unterthema", back:"← Zurück",
        instructionsLabel:"📄 Check-in-Anleitung",
-       catFood:"Essen & Umgebung", catTech:"Technische Probleme", catOther:"Sonstiges", catTransport:"Transport", catAmenities:"Hotelausstattung",
+       catFood:"🍽️ Essen & Umgebung", catTech:"🔧 Technische Probleme", catOther:"📋 Sonstiges", catTransport:"🚌 Transport", catAmenities:"🏨 Hotelausstattung",
        tourLabel:"🧭 3D-Rundgang", tourOpenMsg:"[3D-Rundgang öffnen]("+MATTERPORT_URL+")",
        stillAsk:"Wähle eine Option unten.",
        contact:"Falls Sie nicht finden, was Sie brauchen, schreiben Sie David (WhatsApp +420 733 439 733).",
@@ -704,7 +713,7 @@ const tr = {
 
   fr:{ chooseLang:"Choisissez la langue", mainTitle:"Choisissez un sujet", subTitle:"Sous-sujet", back:"← Retour",
        instructionsLabel:"📄 Instructions de check-in",
-       catFood:"Nourriture & alentours", catTech:"Problèmes techniques", catOther:"Autres", catTransport:"Transport", catAmenities:"Services de l’hôtel",
+       catFood:"🍽️ Nourriture & alentours", catTech:"🔧 Problèmes techniques", catOther:"📋 Autres", catTransport:"🚌 Transport", catAmenities:"🏨 Services de l’hôtel",
        tourLabel:"🧭 Visite virtuelle 3D", tourOpenMsg:"[Ouvrir la visite 3D]("+MATTERPORT_URL+")",
        stillAsk:"Choisissez une option ci-dessous.",
        contact:"Si vous ne trouvez pas ce qu’il vous faut, contactez David (WhatsApp +420 733 439 733).",
@@ -730,7 +739,7 @@ const tr = {
 
   ru:{ chooseLang:"Выберите язык", mainTitle:"Выберите тему", subTitle:"Подтема", back:"← Назад",
        instructionsLabel:"📄 Инструкции по заселению",
-       catFood:"Еда и поблизости", catTech:"Технические вопросы", catOther:"Другое", catTransport:"Транспорт", catAmenities:"Удобства отеля",
+       catFood:"🍽️ Еда и поблизости", catTech:"🔧 Технические вопросы", catOther:"📋 Другое", catTransport:"🚌 Транспорт", catAmenities:"🏨 Удобства отеля",
        tourLabel:"🧭 3D-тур по отелю", tourOpenMsg:"[Открыть 3D-тур]("+MATTERPORT_URL+")",
        stillAsk:"Выберите один из вариантов ниже.",
        contact:"Если вы не нашли нужную информацию, напишите Давиду (WhatsApp +420 733 439 733).",
@@ -756,7 +765,7 @@ const tr = {
 
   uk:{ chooseLang:"Оберіть мову", mainTitle:"Оберіть тему", subTitle:"Підтема", back:"← Назад",
        instructionsLabel:"📄 Інструкції поселення",
-       catFood:"Їжа та поруч", catTech:"Технічні питання", catOther:"Інше", catTransport:"Транспорт", catAmenities:"Зручності готелю",
+       catFood:"🍽️ Їжа та поруч", catTech:"🔧 Технічні питання", catOther:"📋 Інше", catTransport:"🚌 Транспорт", catAmenities:"🏨 Зручності готелю",
        tourLabel:"🧭 3D-тур готелем", tourOpenMsg:"[Відкрити 3D-тур]("+MATTERPORT_URL+")",
        stillAsk:"Виберіть один із варіантів нижче.",
        contact:"Якщо не знайшли потрібну інформацію, напишіть Давиду (WhatsApp +420 733 439 733).",
@@ -782,7 +791,7 @@ const tr = {
 
   nl:{ chooseLang:"Kies een taal", mainTitle:"Kies een onderwerp", subTitle:"Subonderwerp", back:"← Terug",
        instructionsLabel:"📄 Check-in instructies",
-       catFood:"Eten & in de buurt", catTech:"Technische problemen", catOther:"Overig", catTransport:"Vervoer", catAmenities:"Hotelfaciliteiten",
+       catFood:"🍽️ Eten & in de buurt", catTech:"🔧 Technische problemen", catOther:"📋 Overig", catTransport:"🚌 Vervoer", catAmenities:"🏨 Hotelfaciliteiten",
        tourLabel:"🧭 3D-tour", tourOpenMsg:"[3D-tour openen]("+MATTERPORT_URL+")",
        stillAsk:"Kies een optie hieronder.",
        contact:"Kun je niet vinden wat je zoekt? Stuur David een bericht (WhatsApp +420 733 439 733).",
@@ -808,7 +817,7 @@ const tr = {
 
   it:{ chooseLang:"Scegli la lingua", mainTitle:"Scegli un argomento", subTitle:"Sottoargomento", back:"← Indietro",
        instructionsLabel:"📄 Istruzioni di check-in",
-       catFood:"Cibo e dintorni", catTech:"Problemi tecnici", catOther:"Altro", catTransport:"Trasporti", catAmenities:"Servizi dell’hotel",
+       catFood:"🍽️ Cibo e dintorni", catTech:"🔧 Problemi tecnici", catOther:"📋 Altro", catTransport:"🚌 Trasporti", catAmenities:"🏨 Servizi dell’hotel",
        tourLabel:"🧭 Tour 3D", tourOpenMsg:"[Apri il tour 3D]("+MATTERPORT_URL+")",
        stillAsk:"Scegli una delle opzioni sotto.",
        contact:"Se non trovi ciò che ti serve, scrivi a David (WhatsApp +420 733 439 733).",
@@ -834,7 +843,7 @@ const tr = {
 
   da:{ chooseLang:"Vælg sprog", mainTitle:"Vælg et emne", subTitle:"Underemne", back:"← Tilbage",
        instructionsLabel:"📄 Check-in instruktioner",
-       catFood:"Mad og nærområde", catTech:"Tekniske problemer", catOther:"Andet", catTransport:"Transport", catAmenities:"Hotelfaciliteter",
+       catFood:"🍽️ Mad og nærområde", catTech:"🔧 Tekniske problemer", catOther:"📋 Andet", catTransport:"🚌 Transport", catAmenities:"🏨 Hotelfaciliteter",
        tourLabel:"🧭 3D-rundtur", tourOpenMsg:"[Åbn 3D-rundturen]("+MATTERPORT_URL+")",
        stillAsk:"Vælg en af mulighederne herunder.",
        contact:"Hvis du ikke finder det, du har brug for, så skriv til David (WhatsApp +420 733 439 733).",
@@ -860,7 +869,7 @@ const tr = {
 
   pl:{ chooseLang:"Wybierz język", mainTitle:"Wybierz temat", subTitle:"Podtemat", back:"← Wstecz",
        instructionsLabel:"📄 Instrukcje zameldowania",
-       catFood:"Jedzenie i okolica", catTech:"Problemy techniczne", catOther:"Inne", catTransport:"Transport", catAmenities:"Udogodnienia hotelu",
+       catFood:"🍽️ Jedzenie i okolica", catTech:"🔧 Problemy techniczne", catOther:"📋 Inne", catTransport:"🚌 Transport", catAmenities:"🏨 Udogodnienia hotelu",
        tourLabel:"🧭 Wirtualna wycieczka 3D", tourOpenMsg:"[Otwórz wycieczkę 3D]("+MATTERPORT_URL+")",
        stillAsk:"Wybierz jedną z opcji poniżej.",
        contact:"Jeśli nie znajdziesz potrzebnych informacji, napisz do Davida (WhatsApp +420 733 439 733).",
