@@ -183,6 +183,7 @@ const P = {
   KEYBOX_WALL: "/help/key-box-wall.jpg",
   /** Schránka na klíče (soubor s mezerou v názvu → %20 v URL) */
   KEY_BOX: "/help/10.%20Key-box.jpg",
+  MAIN_ENTRANCE: "/help/11.%20Main%20entrance.jpg",
   ELEVATOR: "/help/elevator.jpg",
   FLOOR_HALL: "/help/floor-hall.jpg",
   ROOM_DOOR: "/help/room-door.jpg",
@@ -328,6 +329,7 @@ function buildStayInstructions() {
     "Uvnitř: **klíč** a **čip** (vchodové dveře přes senzor).",
     "Po vyzvednutí prosím schránku **zavřete** a **nepoužívejte** ji během pobytu jako úložiště.",
     `![](${IMG(P.KEY_BOX)})`,
+    `![](${IMG(P.MAIN_ENTRANCE)})`,
     "",
     "### Check-out & zavazadla",
     "**Check-out:** do **11:00**.",
