@@ -37,8 +37,8 @@ const AppStyles = () => (
 
     body{
       margin:0;
-      min-height:100%;
-      min-height:100dvh;
+      height:100%;
+      overflow:hidden;
       font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
       color:var(--ink);
       -webkit-tap-highlight-color:transparent;
@@ -51,10 +51,10 @@ const AppStyles = () => (
 
     .appShell{
       flex:1;
+      min-height:0;
       display:flex;
       flex-direction:column;
-      min-height:100dvh;
-      min-height:100svh;
+      overflow:hidden;
     }
 
     .appHeader{
@@ -910,6 +910,7 @@ export default function App(){
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
 
   const mainColumnRef = useRef(null);
+  const prevChatLenRef = useRef(0);
   const shortcutsRef = useRef(null);
   const searchWrapRef = useRef(null);
   const searchPanelRef = useRef(null);
@@ -924,14 +925,30 @@ export default function App(){
     if (lang) document.body.classList.add("lang-selected"); else document.body.classList.remove("lang-selected");
   }, [lang]);
 
-  // Posuv hlavního sloupce (chat + menu) — jedna oblast skrollování na mobilu
+  // Posun dolů jen při nové odpovědi asistenta (ne při každém renderu — jinak zmizí horní část UI)
   useEffect(() => {
+    const col = mainColumnRef.current;
+    if (!col) return;
+    const prev = prevChatLenRef.current;
+    prevChatLenRef.current = chat.length;
+    const last = chat[chat.length - 1];
+    const assistantAppended =
+      chat.length > prev && last?.role === "assistant";
+    if (!assistantAppended) return;
+    requestAnimationFrame(() => {
+      col.scrollTo({ top: col.scrollHeight, behavior: "smooth" });
+    });
+  }, [chat]);
+
+  // Během načítání ukázat spodní část (tečky), ale bez skoku při prázdném chatu
+  useEffect(() => {
+    if (!loading) return;
     const col = mainColumnRef.current;
     if (!col) return;
     requestAnimationFrame(() => {
       col.scrollTo({ top: col.scrollHeight, behavior: "auto" });
     });
-  }, [chat, loading]);
+  }, [loading]);
 
   // Po výběru jazyka / otevření menu skoč na vyhledávání a témata
   useEffect(() => {
