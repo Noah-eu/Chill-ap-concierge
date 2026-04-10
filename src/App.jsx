@@ -152,6 +152,9 @@ const AppStyles = () => (
       border-radius:var(--radius-md);padding:12px 16px;line-height:1.45;width:fit-content;max-width:100%;white-space:pre-line;
       border:1px solid var(--border);background:var(--surface);box-shadow:0 2px 8px rgba(15,20,25,.04);
     }
+    .chatAssistantAnchor{
+      scroll-margin-top:calc(88px + env(safe-area-inset-top, 0px));
+    }
     .me{
       margin-left:auto;
       background:linear-gradient(145deg, #ecfdf5, #d1fae5);
@@ -1139,6 +1142,7 @@ export default function App(){
 
   const mainColumnRef = useRef(null);
   const prevChatLenRef = useRef(0);
+  const lastAssistantRef = useRef(null);
   const shortcutsRef = useRef(null);
   const searchWrapRef = useRef(null);
   const searchPanelRef = useRef(null);
@@ -1153,10 +1157,8 @@ export default function App(){
     if (lang) document.body.classList.add("lang-selected"); else document.body.classList.remove("lang-selected");
   }, [lang]);
 
-  // Posun dolů jen při nové odpovědi asistenta (ne při každém renderu — jinak zmizí horní část UI)
+  // Nová odpověď asistenta: zarovnat začátek bubliny nahoře (ne skok na konec dlouhého textu)
   useEffect(() => {
-    const col = mainColumnRef.current;
-    if (!col) return;
     const prev = prevChatLenRef.current;
     prevChatLenRef.current = chat.length;
     const last = chat[chat.length - 1];
@@ -1164,19 +1166,12 @@ export default function App(){
       chat.length > prev && last?.role === "assistant";
     if (!assistantAppended) return;
     requestAnimationFrame(() => {
-      col.scrollTo({ top: col.scrollHeight, behavior: "smooth" });
+      lastAssistantRef.current?.scrollIntoView({
+        behavior: "auto",
+        block: "start",
+      });
     });
   }, [chat]);
-
-  // Během načítání ukázat spodní část (tečky), ale bez skoku při prázdném chatu
-  useEffect(() => {
-    if (!loading) return;
-    const col = mainColumnRef.current;
-    if (!col) return;
-    requestAnimationFrame(() => {
-      col.scrollTo({ top: col.scrollHeight, behavior: "auto" });
-    });
-  }, [loading]);
 
   // Po výběru jazyka / otevření menu skoč na vyhledávání a témata
   useEffect(() => {
@@ -1648,11 +1643,20 @@ export default function App(){
         <div className="scroller">
           {!lang && renderLangChooser()}
 
-          {chat.map((m,i) =>
-            m.role === "assistant"
-              ? <div key={i}>{renderAssistant(m.content)}</div>
-              : <div key={i} className="bubble me">{m.content}</div>
-          )}
+          {chat.map((m, i) => {
+            const isLast = i === chat.length - 1;
+            const anchorRef =
+              m.role === "assistant" && isLast ? lastAssistantRef : undefined;
+            return m.role === "assistant" ? (
+              <div key={i} ref={anchorRef} className="chatAssistantAnchor">
+                {renderAssistant(m.content)}
+              </div>
+            ) : (
+              <div key={i} className="bubble me">
+                {m.content}
+              </div>
+            );
+          })}
           {loading && (
             <div className="bubble bot typingBubble" aria-busy="true" aria-label={t(lang ?? "en", "loadingReply")}>
               <span className="typingDots" aria-hidden>
