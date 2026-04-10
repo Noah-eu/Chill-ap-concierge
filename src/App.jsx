@@ -17,16 +17,17 @@ const AppStyles = () => (
       --ink-soft:#3d4550;
       --muted:#5c6570;
       --surface:#ffffff;
-      --surface-2:#f4f6f9;
+      --surface-2:#f1f5f4;
       --border:rgba(15,20,25,.10);
-      --glow:rgba(20,184,166,.18);
+      --glow:rgba(20,184,166,.22);
       --accent:#0d9488;
       --accent-2:#0f766e;
-      --accent-3:#c2410c;
+      --accent-3:#115e59;
       --teal:#14b8a6;
-      --coral:#ea580c;
+      --teal-muted:#5eead4;
       --blue: var(--accent);
       --danger:#dc2626;
+      --tile-radius:16px;
       --radius-lg:20px;
       --radius-md:14px;
       --radius-btn:14px;
@@ -43,9 +44,9 @@ const AppStyles = () => (
       color:var(--ink);
       -webkit-tap-highlight-color:transparent;
       background:
-        radial-gradient(1000px 520px at 8% -8%, rgba(20,184,166,.14), transparent 55%),
-        radial-gradient(900px 480px at 92% 0%, rgba(234,88,12,.10), transparent 50%),
-        linear-gradient(165deg, #f8fafc 0%, #eef2f7 48%, #f1f5f9 100%);
+        radial-gradient(120% 80% at 0% 0%, rgba(13,148,136,.10), transparent 52%),
+        radial-gradient(90% 70% at 100% 10%, rgba(20,184,166,.08), transparent 48%),
+        linear-gradient(168deg, #f8fafb 0%, #eef2f1 42%, #ecf4f3 100%);
       background-attachment:fixed;
     }
 
@@ -119,8 +120,8 @@ const AppStyles = () => (
       border-color:rgba(20,184,166,.25);
     }
     .bot{
-      background:linear-gradient(180deg, #fffefb, #faf8f5);
-      border-color:rgba(234,88,12,.12);
+      background:linear-gradient(180deg, #ffffff, #f9fafb);
+      border-color:color-mix(in oklab,var(--accent),transparent 88%);
     }
 
     .bot p{margin:6px 0}
@@ -143,7 +144,6 @@ const AppStyles = () => (
     }
     .bot a:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.32)}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;width:100%}
     .chipPrimary{
       --btn:var(--accent);
       appearance:none;
@@ -176,6 +176,64 @@ const AppStyles = () => (
     }
     .chip:hover{transform:translateY(-2px);border-left-color:var(--accent);box-shadow:0 3px 0 rgba(15,20,25,.06), 0 8px 18px rgba(15,20,25,.07)}
     .chip:active{transform:translateY(0)}
+
+    /* Hlavní menu: čtverce 2×2, jednotná tealková paleta */
+    .menuGrid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:11px;
+      width:100%;
+    }
+    .menuGrid .chipPrimary,
+    .menuGrid .chip{
+      width:100%;
+      margin:0;
+      aspect-ratio:1;
+      min-height:0;
+      min-width:0;
+      padding:10px 8px;
+      border-radius:var(--tile-radius);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      font-size:clamp(0.7rem, 3.1vw, 0.8rem);
+      line-height:1.22;
+      letter-spacing:.015em;
+      text-align:center;
+      hyphens:auto;
+      -webkit-hyphens:auto;
+      overflow:hidden;
+      border-bottom-width:1px;
+      border-left-width:1px;
+      box-shadow:0 2px 10px rgba(15,20,25,.07);
+    }
+    .menuGrid .chipPrimary{
+      color:#fff;
+      border:1px solid color-mix(in oklab,var(--btn),black 18%);
+      background:linear-gradient(155deg,color-mix(in oklab,var(--btn),white 14%) 0%,var(--btn) 48%,color-mix(in oklab,var(--btn),black 8%) 100%);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.22) inset,
+        0 6px 18px color-mix(in oklab,var(--btn),transparent 58%);
+    }
+    .menuGrid .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 10px 24px color-mix(in oklab,var(--btn),transparent 50%)}
+    .menuGrid .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
+    .menuGrid .chipPrimary:disabled{transform:none;filter:none;opacity:.5}
+    .menuGrid .chip{
+      color:var(--ink);
+      font-weight:700;
+      background:linear-gradient(180deg,#ffffff,#f4faf9);
+      border:1px solid color-mix(in oklab,var(--btn),transparent 72%);
+      border-top:3px solid var(--btn);
+      box-shadow:0 2px 8px rgba(13,148,136,.08);
+    }
+    .menuGrid .chip:hover{
+      transform:translateY(-2px);
+      border-color:color-mix(in oklab,var(--btn),transparent 50%);
+      box-shadow:0 6px 16px rgba(13,148,136,.12);
+    }
+    .menuGrid .chip:active{transform:translateY(0)}
 
     .backBtn{
       appearance:none;
@@ -252,9 +310,12 @@ const AppStyles = () => (
     .shortcuts{
       flex:0 1 auto;
       min-height:0;
-      border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;
-      background:linear-gradient(165deg,#fff 0%,#f8fafc 100%);
-      box-shadow:var(--shadow);scroll-margin-top:14px;
+      border:1px solid color-mix(in oklab,var(--accent),transparent 88%);
+      border-radius:var(--radius-lg);
+      padding:14px 14px 16px;
+      background:linear-gradient(165deg,#ffffff 0%,#f6faf9 55%,#f0f7f6 100%);
+      box-shadow:var(--shadow), 0 0 0 1px rgba(255,255,255,.6) inset;
+      scroll-margin-top:14px;
     }
     .shortcutsHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
     .shortcutsHeader strong{font-size:1rem;letter-spacing:-.02em}
@@ -263,10 +324,17 @@ const AppStyles = () => (
 
     .contactBar{
       flex:0 0 auto;
-      margin-top:2px;padding:12px 14px;border-radius:var(--radius-md);
-      border:1px dashed rgba(13,148,136,.35);
-      background:linear-gradient(90deg,rgba(236,253,245,.9),rgba(255,251,235,.85));
-      color:var(--ink-soft);font-size:14px;line-height:1.45;
+      position:relative;
+      z-index:2;
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:var(--radius-md);
+      border:1px solid color-mix(in oklab,var(--accent),transparent 78%);
+      background:linear-gradient(100deg,rgba(236,253,250,.95),rgba(240,253,250,.92));
+      color:var(--ink-soft);
+      font-size:13px;
+      line-height:1.45;
+      box-shadow:0 2px 10px rgba(13,148,136,.06);
     }
 
     .langChooserCard{
@@ -330,7 +398,6 @@ const AppStyles = () => (
     .langGrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 
     @media (max-width:640px){
-      .grid{grid-template-columns:1fr}
       .row{
         max-width:none;
         margin:0;
@@ -889,8 +956,18 @@ function enumerateFlowEntries(nodes, ancestors = []) {
 }
 
 /** ================== barvy ============== */
-const btnColorForIndex = (i) =>
-  [ "var(--accent)", "var(--accent-2)", "var(--accent-3)", "var(--teal)" ][i % 4];
+/** Tealková škála — sladěné odstíny (bez oranžové) */
+const btnColorForIndex = (i) => {
+  const hex = [
+    "#0d9488",
+    "#0f766e",
+    "#115e59",
+    "#134e4a",
+    "#14b8a6",
+    "#0d9488",
+  ];
+  return hex[i % hex.length];
+};
 
 /** ================== App ================== */
 export default function App(){
@@ -1439,7 +1516,7 @@ export default function App(){
               </div>
             </div>
 
-            <div className="grid">
+            <div className="menuGrid">
               {currentChildren.map((n, idx) =>
                 n.children ? (
                   <button
