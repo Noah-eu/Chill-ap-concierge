@@ -3,8 +3,22 @@
 import OpenAI from "openai";
 import { PLACES } from "./data/places.js";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const MODEL  = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+
+/** Lazy init + timeout — šetří cold start a snižuje riziko 502 (timeout na Netlify). */
+let _openai = null;
+function getOpenAI() {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  if (!_openai) {
+    _openai = new OpenAI({
+      apiKey: key,
+      maxRetries: 1,
+      timeout: 12_000,
+    });
+  }
+  return _openai;
+}
 
 /** ====== LOKÁLNÍ DATA ====== */
 const HOTEL = {
@@ -125,16 +139,28 @@ async function translateToUserLang(text, userText, uiLang) {
   const cached = _cacheGet(hint || "cs", text || "");
   if (cached) return cached;
 
-  const completion = await client.chat.completions.create({
-    model: MODEL, temperature: 0.0,
-    messages: [
-      { role: "system", content: `Rewrite ASSISTANT_MESSAGE in TARGET_LANG. Keep meaning, tone, formatting and emojis. Preserve markdown links. Be concise. TARGET_LANG=${hint || "cs"}` },
-      { role: "user", content: "ASSISTANT_MESSAGE:\n" + (text || "") }
-    ]
-  });
-  const out = completion.choices?.[0]?.message?.content?.trim() || text;
-  _cacheSet(hint || "cs", text || "", out);
-  return out;
+  const client = getOpenAI();
+  if (!client) return text;
+
+  try {
+    const completion = await client.chat.completions.create({
+      model: MODEL,
+      temperature: 0.0,
+      messages: [
+        {
+          role: "system",
+          content: `Rewrite ASSISTANT_MESSAGE in TARGET_LANG. Keep meaning, tone, formatting and emojis. Preserve markdown links. Be concise. TARGET_LANG=${hint || "cs"}`,
+        },
+        { role: "user", content: "ASSISTANT_MESSAGE:\n" + (text || "") },
+      ],
+    });
+    const out = completion.choices?.[0]?.message?.content?.trim() || text;
+    _cacheSet(hint || "cs", text || "", out);
+    return out;
+  } catch (e) {
+    console.error("translateToUserLang", e?.message || e);
+    return text;
+  }
 }
 
 /** ====== IMG PATHS ====== */
@@ -526,22 +552,14 @@ function buildCuratedListWithMaps(sub, {
 }
 
 /** ====== MAIN ====== */
-export default async (req) => {
-  if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
-  if (!process.env.OPENAI_API_KEY) {
-    return new Response(JSON.stringify({ reply: "⚠️ Server nemá nastavený OPENAI_API_KEY." }), {
-      status: 500, headers: { "content-type": "application/json" }
-    });
-  }
-
+async function runConcierge(body) {
+  const { messages = [], uiLang = null, control = null } = body || {};
   try {
-    const body = await req.json();
-    const { messages = [], uiLang = null, control = null } = body || {};
     const userText = lastUser(messages);
 
     // 0) Follow-up: číslo pokoje po „Náhradní klíč“ – vrací bezpečný návod (bez kódů)
     if (isKeysFollowUp(messages)) {
-      return ok(await translateToUserLang(buildKeyHelp(), userText, uiLang));
+      return await translateToUserLang(buildKeyHelp(), userText, uiLang);
     }
 
     // 1) CONTROL – pevná tlačítka
@@ -555,7 +573,7 @@ export default async (req) => {
         };
         const valid = new Set(["dining","breakfast","cafe","bakery","veggie","czech","bar","vietnam","grocery","pharmacy","exchange","atm"]);
         if (!valid.has(sub)) {
-          return ok(await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang));
+          return await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang);
         }
 
         let curated;
@@ -586,8 +604,8 @@ export default async (req) => {
         }
 
         // ⏩ list vrať rovnou (bez překladu); fallback přelož
-        if (curated) return ok(curated);
-        return ok(await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang));
+        if (curated) return curated;
+        return await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang);
       }
 
       // b) Technické / interní – vracíme markdowny + fotky
@@ -623,7 +641,7 @@ export default async (req) => {
         };
         const fn = map[sub];
         const text = fn ? fn() : HANDOFF_MSG;
-        return ok(await translateToUserLang(text, userText || sub, uiLang));
+        return await translateToUserLang(text, userText || sub, uiLang);
       }
 
       // c) Vybavení hotelu
@@ -637,19 +655,19 @@ export default async (req) => {
         };
         const fn = map[sub];
         const text = fn ? fn() : HANDOFF_MSG;
-        return ok(await translateToUserLang(text, userText || sub, uiLang));
+        return await translateToUserLang(text, userText || sub, uiLang);
       }
 
       // d) NOVÉ: Instrukce k ubytování
       if (control.intent === "stay" && String(control.sub || "").toLowerCase() === "instructions") {
         const text = buildStayInstructions();
-        return ok(await translateToUserLang(text, userText, uiLang));
+        return await translateToUserLang(text, userText, uiLang);
       }
     }
 
     // 2) Handoff (parkování apod.)
     if (FORBIDDEN_PATTERNS.some(r => r.test(userText))) {
-      return ok(await translateToUserLang(HANDOFF_MSG, userText, uiLang));
+      return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
     }
 
     // 3) Intent z volného textu
@@ -661,38 +679,38 @@ export default async (req) => {
       const ssid = extractSSID(userText);
       const entry = room ? wifiByRoom(room) : (ssid ? wifiBySsid(ssid) : null);
 
-      if (entry) return ok(await translateToUserLang(buildWifiCreds(entry), userText, uiLang));
+      if (entry) return await translateToUserLang(buildWifiCreds(entry), userText, uiLang);
       const reply = recentlySentWifiTroubleshoot(messages)
         ? "Napište prosím **číslo apartmánu** nebo **SSID** (4 znaky) – pošlu heslo."
         : buildWifiTroubleshoot();
-      return ok(await translateToUserLang(reply, userText, uiLang));
+      return await translateToUserLang(reply, userText, uiLang);
     }
 
-    if (intent === "stay_instructions")  return ok(await translateToUserLang(buildStayInstructions(), userText, uiLang));
-    if (intent === "ac")               return ok(await translateToUserLang(buildACHelp(), userText, uiLang));
-    if (intent === "power")            return ok(await translateToUserLang(buildPowerHelp(), userText, uiLang));
-    if (intent === "access")           return ok(await translateToUserLang(buildAccessibility(), userText, uiLang));
-    if (intent === "smoking")          return ok(await translateToUserLang(buildSmoking(), userText, uiLang));
-    if (intent === "pets")             return ok(await translateToUserLang(buildPets(), userText, uiLang));
-    if (intent === "laundry")          return ok(await translateToUserLang(buildLaundry(), userText, uiLang));
-    if (intent === "luggage")          return ok(await translateToUserLang(buildLuggageInfo(), userText, uiLang));
-    if (intent === "keys")             return ok(await translateToUserLang(buildKeyHelp(), userText, uiLang));
-    if (intent === "trash")            return ok(await translateToUserLang(buildTrash(), userText, uiLang));
-    if (intent === "gate")             return ok(await translateToUserLang(buildGate(), userText, uiLang));
-    if (intent === "doorbells")        return ok(await translateToUserLang(buildDoorbells(), userText, uiLang));
-    if (intent === "elevator_phone")   return ok(await translateToUserLang(buildElevatorPhone(), userText, uiLang));
-    if (intent === "fire_alarm")       return ok(await translateToUserLang(buildFireAlarm(), userText, uiLang));
-    if (intent === "linen_towels")     return ok(await translateToUserLang(buildLinenTowels(), userText, uiLang));
-    if (intent === "doctor")           return ok(await translateToUserLang(buildDoctor(), userText, uiLang));
-    if (intent === "coffee")           return ok(await translateToUserLang(buildCoffee(), userText, uiLang));
-    if (intent === "hot_water")        return ok(await translateToUserLang(buildHotWater(), userText, uiLang));
-    if (intent === "induction")        return ok(await translateToUserLang(buildInduction(), userText, uiLang));
-    if (intent === "hood")             return ok(await translateToUserLang(buildHood(), userText, uiLang));
-    if (intent === "safe")             return ok(await translateToUserLang(buildSafe(), userText, uiLang));
+    if (intent === "stay_instructions")  return await translateToUserLang(buildStayInstructions(), userText, uiLang);
+    if (intent === "ac")               return await translateToUserLang(buildACHelp(), userText, uiLang);
+    if (intent === "power")            return await translateToUserLang(buildPowerHelp(), userText, uiLang);
+    if (intent === "access")           return await translateToUserLang(buildAccessibility(), userText, uiLang);
+    if (intent === "smoking")          return await translateToUserLang(buildSmoking(), userText, uiLang);
+    if (intent === "pets")             return await translateToUserLang(buildPets(), userText, uiLang);
+    if (intent === "laundry")          return await translateToUserLang(buildLaundry(), userText, uiLang);
+    if (intent === "luggage")          return await translateToUserLang(buildLuggageInfo(), userText, uiLang);
+    if (intent === "keys")             return await translateToUserLang(buildKeyHelp(), userText, uiLang);
+    if (intent === "trash")            return await translateToUserLang(buildTrash(), userText, uiLang);
+    if (intent === "gate")             return await translateToUserLang(buildGate(), userText, uiLang);
+    if (intent === "doorbells")        return await translateToUserLang(buildDoorbells(), userText, uiLang);
+    if (intent === "elevator_phone")   return await translateToUserLang(buildElevatorPhone(), userText, uiLang);
+    if (intent === "fire_alarm")       return await translateToUserLang(buildFireAlarm(), userText, uiLang);
+    if (intent === "linen_towels")     return await translateToUserLang(buildLinenTowels(), userText, uiLang);
+    if (intent === "doctor")           return await translateToUserLang(buildDoctor(), userText, uiLang);
+    if (intent === "coffee")           return await translateToUserLang(buildCoffee(), userText, uiLang);
+    if (intent === "hot_water")        return await translateToUserLang(buildHotWater(), userText, uiLang);
+    if (intent === "induction")        return await translateToUserLang(buildInduction(), userText, uiLang);
+    if (intent === "hood")             return await translateToUserLang(buildHood(), userText, uiLang);
+    if (intent === "safe")             return await translateToUserLang(buildSafe(), userText, uiLang);
 
     if (intent === "local") {
       let sub = detectLocalSubtype(userText);
-      if (!sub) return ok(await translateToUserLang(HANDOFF_MSG, userText, uiLang));
+      if (!sub) return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
       const labelMap = {
         cs:"Otevřít", en:"Open", de:"Öffnen", fr:"Ouvrir", es:"Abrir",
         ru:"Открыть", uk:"Відкрити", nl:"Openen", it:"Apri", da:"Åbn", pl:"Otwórz"
@@ -710,21 +728,77 @@ export default async (req) => {
       });
 
       // ⏩ list vrať rovnou; fallback přelož
-      if (curated) return ok(curated);
-      return ok(await translateToUserLang(HANDOFF_MSG, userText, uiLang));
+      if (curated) return curated;
+      return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
     }
 
     // 4) fallback
-    return ok(await translateToUserLang("Rozumím.", userText, uiLang));
+    return await translateToUserLang("Rozumím.", userText, uiLang);
 
   } catch (e) {
     console.error(e);
-    return ok("Omlouvám se, nastala chyba. Zkuste to prosím znovu.");
+    return "Omlouvám se, nastala chyba. Zkuste to prosím znovu.";
   }
+}
 
-  function ok(reply) {
-    return new Response(JSON.stringify({ reply }), {
-      status: 200, headers: { "content-type": "application/json" }
-    });
+function parseLambdaBody(event) {
+  if (!event?.body) return {};
+  const raw = event.isBase64Encoded
+    ? Buffer.from(event.body, "base64").toString("utf8")
+    : event.body;
+  const t = (raw || "").trim();
+  if (!t) return {};
+  return JSON.parse(t);
+}
+
+/** Klasický Netlify / AWS tvar — spolehlivější než výchozí export s Request (502 na některých projektech). */
+export const handler = async (event, context) => {
+  const method =
+    event.httpMethod ||
+    event.requestContext?.http?.method ||
+    event.requestContext?.method ||
+    "";
+  if (method !== "POST") {
+    return {
+      statusCode: 405,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+      body: "Method Not Allowed",
+    };
+  }
+  if (!process.env.OPENAI_API_KEY) {
+    return {
+      statusCode: 500,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ reply: "⚠️ Server nemá nastavený OPENAI_API_KEY." }),
+    };
+  }
+  let body;
+  try {
+    body = parseLambdaBody(event);
+  } catch (e) {
+    console.error(e);
+    return {
+      statusCode: 400,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ reply: "Neplatný JSON v požadavku." }),
+    };
+  }
+  try {
+    const reply = await runConcierge(body);
+    const text = typeof reply === "string" ? reply : String(reply ?? "");
+    return {
+      statusCode: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ reply: text }),
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      statusCode: 200,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        reply: "Omlouvám se, nastala chyba. Zkuste to prosím znovu.",
+      }),
+    };
   }
 };
