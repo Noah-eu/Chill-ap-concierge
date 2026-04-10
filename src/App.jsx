@@ -51,6 +51,23 @@ function removeRecentNid(nid) {
   }
 }
 
+/** Kořenová témata pro obrazovku „Důležité teď“ (musí odpovídat `nid` v makeFlows). */
+const ESSENTIAL_MENU_NIDS = [
+  "wifi_quick",
+  "stay_instructions",
+  "other_trash",
+  "other_doctor",
+];
+
+/** Z odpovědi concierge (markdown) s údaji Wi‑Fi. */
+function extractWifiCredsFromReply(src) {
+  const s = typeof src === "string" ? src : "";
+  const ssidM = s.match(/SSID\s*\*\*([A-Z0-9]{4})\*\*/i);
+  const passM = s.match(/\*\*(\d{8})\*\*/);
+  if (ssidM?.[1] && passM?.[1]) return { ssid: ssidM[1], pass: passM[1] };
+  return null;
+}
+
 /** Cesta od kořene k uzlu s daným `nid` (včetně cíle). */
 function findPathByNid(nodes, targetNid, pathSoFar = []) {
   if (!nodes?.length) return null;
@@ -312,6 +329,38 @@ const AppStyles = () => (
       cursor:pointer;min-height:44px;touch-action:manipulation;-webkit-user-select:none;user-select:none;
     }
     .recentChip:hover,.recentChip:focus-visible{border-color:var(--accent);outline:none}
+
+    .essentialsGrid{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px;
+    }
+    .essentialsTile{
+      appearance:none;font-family:var(--font-app);font-size:.88rem;font-weight:800;
+      min-height:56px;padding:14px 12px;border-radius:14px;
+      border:1px solid color-mix(in oklab,var(--btn,var(--accent)),transparent 40%);
+      background:linear-gradient(180deg,var(--surface),var(--surface-2));color:var(--accent-2);
+      cursor:pointer;text-align:center;line-height:1.25;touch-action:manipulation;
+    }
+    .essentialsTile:hover,.essentialsTile:focus-visible{
+      border-color:var(--accent);outline:none;
+      background:color-mix(in oklab,var(--accent),transparent 88%);
+    }
+    .essentialsAllTopicsBtn{
+      display:block;width:100%;box-sizing:border-box;margin:0 0 14px;
+      min-height:50px;padding:12px 16px;border-radius:12px;border:1px dashed var(--border);
+      background:var(--surface-2);font-family:var(--font-app);font-weight:700;font-size:.86rem;
+      color:var(--accent-2);cursor:pointer;touch-action:manipulation;
+    }
+    .essentialsAllTopicsBtn:hover,.essentialsAllTopicsBtn:focus-visible{
+      border-color:var(--accent);background:color-mix(in oklab,var(--accent),transparent 90%);outline:none;
+    }
+    .wifiCopyBar{margin:8px 0 0;padding:0 2px}
+    .wifiCopyBtn{
+      appearance:none;font-family:var(--font-app);font-size:.84rem;font-weight:700;
+      padding:12px 16px;border-radius:12px;border:1px solid color-mix(in oklab,var(--accent),transparent 35%);
+      background:color-mix(in oklab,var(--accent),transparent 92%);color:var(--accent-2);
+      cursor:pointer;width:100%;max-width:280px;touch-action:manipulation;min-height:48px;
+    }
+    .wifiCopyBtn:hover,.wifiCopyBtn:focus-visible{border-color:var(--accent);outline:none}
     .searchQuickPicks{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
     .searchQuickPicksLabel{font-size:.8rem;font-weight:700;color:var(--muted);margin-bottom:8px}
     .searchQuickPickBtn{
@@ -1289,6 +1338,10 @@ const uxStrings = {
     shareCopied: "Link copied to clipboard.",
     shareFailed: "Copy this link manually:",
     shareTileAria: "Share link to",
+    essentialsTitle: "Important now",
+    essentialsAllTopics: "All topics",
+    copyWifiPassword: "Copy Wi‑Fi password",
+    wifiPasswordCopied: "Password copied.",
   },
   cs: {
     breadcrumbHome: "Domů",
@@ -1310,6 +1363,10 @@ const uxStrings = {
     shareCopied: "Odkaz zkopírován do schránky.",
     shareFailed: "Zkopírujte odkaz ručně:",
     shareTileAria: "Sdílet odkaz k položce",
+    essentialsTitle: "Důležité teď",
+    essentialsAllTopics: "Všechna témata",
+    copyWifiPassword: "Zkopírovat heslo Wi‑Fi",
+    wifiPasswordCopied: "Heslo zkopírováno.",
   },
 };
 
@@ -1437,6 +1494,8 @@ export default function App(){
 
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
   const [recentTick, setRecentTick] = useState(0);
+  /** false = jen „Důležité teď“ na kořeni; true = plná mřížka témat. */
+  const [showAllTopics, setShowAllTopics] = useState(false);
   const [sentToast, setSentToast] = useState(false);
   const [shareNotice, setShareNotice] = useState(null);
   const [conciergeError, setConciergeError] = useState(null);
@@ -1472,6 +1531,10 @@ export default function App(){
 
   useEffect(() => {
     if (lang) document.body.classList.add("lang-selected"); else document.body.classList.remove("lang-selected");
+  }, [lang]);
+
+  useEffect(() => {
+    setShowAllTopics(false);
   }, [lang]);
 
   // Nová odpověď asistenta: zarovnat začátek bubliny nahoře (ne skok na konec dlouhého textu)
@@ -1778,7 +1841,38 @@ export default function App(){
       );
     }
 
-    return <div className="bubble bot" dangerouslySetInnerHTML={{ __html: clean }} />;
+    const bubble = (
+      <div className="bubble bot" dangerouslySetInnerHTML={{ __html: clean }} />
+    );
+    const wifiCreds = extractWifiCredsFromReply(src);
+    if (!wifiCreds) return bubble;
+    const copyLabel = tUx(lang ?? "en", "copyWifiPassword");
+    const copiedMsg = tUx(lang ?? "en", "wifiPasswordCopied");
+    const failMsg = tUx(lang ?? "en", "shareFailed");
+    return (
+      <>
+        {bubble}
+        <div className="wifiCopyBar">
+          <button
+            type="button"
+            className="wifiCopyBtn"
+            onClick={() => {
+              const { pass } = wifiCreds;
+              if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+                navigator.clipboard
+                  .writeText(pass)
+                  .then(() => setShareNotice(copiedMsg))
+                  .catch(() => window.prompt(failMsg, pass));
+              } else if (typeof window !== "undefined") {
+                window.prompt(failMsg, pass);
+              }
+            }}
+          >
+            {copyLabel}
+          </button>
+        </div>
+      </>
+    );
   }
 
   function extractReplyFromResponseBody(rawText, httpOk) {
@@ -1902,6 +1996,23 @@ export default function App(){
       })
       .filter(Boolean);
   }, [FLOWS, recentTick]);
+
+  const essentialTiles = useMemo(() => {
+    if (!FLOWS.length) return [];
+    return ESSENTIAL_MENU_NIDS.map((nid) => {
+      const path = findPathByNid(FLOWS, nid);
+      if (!path?.length) return null;
+      const node = path[path.length - 1];
+      return { nid, label: node.label };
+    }).filter(Boolean);
+  }, [FLOWS]);
+
+  const essentialsOnlyView = Boolean(
+    lang && stack.length === 0 && !showAllTopics && essentialTiles.length > 0
+  );
+
+  const showRootTopicGrid =
+    stack.length > 0 || showAllTopics || essentialTiles.length === 0;
 
   const breadcrumbSegments = useMemo(() => {
     if (!lang) return [];
@@ -2333,6 +2444,91 @@ export default function App(){
                 </span>
               ))}
             </nav>
+            <div className="shortcutsHeader">
+              <strong id="shortcuts-heading">
+                {stack.length > 0
+                  ? t(lang, "subTitle")
+                  : essentialsOnlyView
+                    ? tUx(lang, "essentialsTitle")
+                    : t(lang, "mainTitle")}
+              </strong>
+              <div className="btnRow">
+                {stack.length > 0 && (
+                  <button
+                    type="button"
+                    className="backBtn backBtn--danger"
+                    onClick={() => {
+                      goBack();
+                      scrollToMainNav();
+                    }}
+                  >
+                    {t(lang,"back")}
+                  </button>
+                )}
+                <button type="button" className="backBtn backBtn--teal" onClick={() => { setShortcutsOpen(false); }}>
+                  {t(lang,"hide")}
+                </button>
+                <button
+                  type="button"
+                  className="backBtn backBtn--teal"
+                  onClick={() => shareConciergeUrl()}
+                  title={tUx(lang, "shareSection")}
+                >
+                  🔗 {tUx(lang, "shareSection")}
+                </button>
+                <button
+                  type="button"
+                  className="backBtn backBtn--teal"
+                  onClick={() => {
+                    lastTouchedNidRef.current = null;
+                    setLang(null);
+                    setStack([]);
+                    setSearchQuery("");
+                    setWifiCtas({ showPassword:false, showNotOk:false });
+                    setShortcutsOpen(false);
+                    requestAnimationFrame(() => {
+                      mainColumnRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                    });
+                  }}
+                >
+                  🌐 {t(lang || "cs","chooseLang")}
+                </button>
+              </div>
+            </div>
+            {essentialsOnlyView && (
+              <>
+                <div className="essentialsGrid">
+                  {essentialTiles.map((tile, i) => (
+                    <button
+                      key={tile.nid}
+                      type="button"
+                      className="essentialsTile"
+                      style={{ ["--btn"]: btnColorForIndex(i) }}
+                      disabled={loading}
+                      onClick={() => {
+                        lastTouchedNidRef.current = tile.nid;
+                        navigateFlowNid(tile.nid, FLOWS, {
+                          setStack,
+                          setShortcutsOpen,
+                          setWifiCtas,
+                          scrollToMainNav,
+                          onChipClick: (node) => onChipClick(node),
+                        });
+                      }}
+                    >
+                      {tile.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="essentialsAllTopicsBtn"
+                  onClick={() => setShowAllTopics(true)}
+                >
+                  {tUx(lang, "essentialsAllTopics")}
+                </button>
+              </>
+            )}
             {recentList.length > 0 && (
               <div className="recentRow">
                 <p className="recentRowLabel">{tUx(lang, "recentTitle")}</p>
@@ -2387,59 +2583,37 @@ export default function App(){
                 </div>
               </div>
             )}
-            <div className="shortcutsHeader">
-              <strong id="shortcuts-heading">
-                {stack.length === 0 ? t(lang, "mainTitle") : t(lang, "subTitle")}
-              </strong>
-              <div className="btnRow">
-                {stack.length > 0 && (
-                  <button
-                    type="button"
-                    className="backBtn backBtn--danger"
-                    onClick={() => {
-                      goBack();
-                      scrollToMainNav();
-                    }}
-                  >
-                    {t(lang,"back")}
-                  </button>
-                )}
-                <button type="button" className="backBtn backBtn--teal" onClick={() => { setShortcutsOpen(false); }}>
-                  {t(lang,"hide")}
-                </button>
-                <button
-                  type="button"
-                  className="backBtn backBtn--teal"
-                  onClick={() => shareConciergeUrl()}
-                  title={tUx(lang, "shareSection")}
-                >
-                  🔗 {tUx(lang, "shareSection")}
-                </button>
-                <button
-                  type="button"
-                  className="backBtn backBtn--teal"
-                  onClick={() => {
-                    lastTouchedNidRef.current = null;
-                    setLang(null);
-                    setStack([]);
-                    setSearchQuery("");
-                    setWifiCtas({ showPassword:false, showNotOk:false });
-                    setShortcutsOpen(false);
-                    requestAnimationFrame(() => {
-                      mainColumnRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-                    });
-                  }}
-                >
-                  🌐 {t(lang || "cs","chooseLang")}
-                </button>
-              </div>
-            </div>
 
-            <div className="menuGrid">
-              {currentChildren.map((n, idx) =>
-                n.nid ? (
-                  <div key={n.nid} className="menuTileWrap">
+            {showRootTopicGrid && (
+              <div className="menuGrid">
+                {currentChildren.map((n, idx) =>
+                  n.nid ? (
+                    <div key={n.nid} className="menuTileWrap">
+                      <button
+                        type="button"
+                        className="chipPrimary"
+                        style={{ ["--btn"]: btnColorForIndex(idx) }}
+                        onClick={() => onChipClick(n)}
+                        disabled={loading && !n.children}
+                        title={n.control?.sub || n.action || ""}
+                      >
+                        {n.label}
+                      </button>
+                      <button
+                        type="button"
+                        className="tileShareBtn"
+                        aria-label={`${tUx(lang, "shareTileAria")}: ${n.label}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          shareConciergeUrl(n.nid);
+                        }}
+                      >
+                        🔗
+                      </button>
+                    </div>
+                  ) : (
                     <button
+                      key={`m-${idx}`}
                       type="button"
                       className="chipPrimary"
                       style={{ ["--btn"]: btnColorForIndex(idx) }}
@@ -2449,33 +2623,10 @@ export default function App(){
                     >
                       {n.label}
                     </button>
-                    <button
-                      type="button"
-                      className="tileShareBtn"
-                      aria-label={`${tUx(lang, "shareTileAria")}: ${n.label}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        shareConciergeUrl(n.nid);
-                      }}
-                    >
-                      🔗
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    key={`m-${idx}`}
-                    type="button"
-                    className="chipPrimary"
-                    style={{ ["--btn"]: btnColorForIndex(idx) }}
-                    onClick={() => onChipClick(n)}
-                    disabled={loading && !n.children}
-                    title={n.control?.sub || n.action || ""}
-                  >
-                    {n.label}
-                  </button>
-                )
-              )}
-            </div>
+                  )
+                )}
+              </div>
+            )}
 
             <div className="tips" style={{ marginTop:8 }}>{t(lang,"stillAsk")}</div>
           </div>
