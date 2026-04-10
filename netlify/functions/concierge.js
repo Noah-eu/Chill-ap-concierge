@@ -339,13 +339,6 @@ function buildStayInstructions() {
     "Klíč prosím vhoďte do **bílé poštovní schránky** v přízemí, **naproti výtahu** (uvnitř budovy).",
     `![](${IMG(P.CHECKOUT_BOX)})`,
     "**Úschovnu zavazadel** můžete využít i po check-outu.",
-    "",
-    "### Důležité informace",
-    "- Název a heslo k Wi-Fi najdete na spodní straně routeru.",
-    "- Klimatizace: režim **Sun** topí, **Snowflake** chladí.",
-    `![](${IMG(P.BALCONY)})`,
-    "- Všechny pokoje jsou nekuřácké (pokuta 2000 Kč). Kouřit lze pouze na balkonech na každém patře nebo na dvoře.",
-    "- Nepoužívejte prosím v apartmánu otevřený oheň.",
   ].join("\n");
 }
 
