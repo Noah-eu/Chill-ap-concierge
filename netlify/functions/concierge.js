@@ -181,10 +181,12 @@ const P = {
   DOOR_BELLS: "/help/door-bells.jpg",
   ENTRY_DIAL: "/help/entry-dialer.jpg",
   KEYBOX_WALL: "/help/key-box-wall.jpg",
+  /** Schránka na klíče (soubor s mezerou v názvu → %20 v URL) */
+  KEY_BOX: "/help/10.%20Key-box.jpg",
   ELEVATOR: "/help/elevator.jpg",
   FLOOR_HALL: "/help/floor-hall.jpg",
   ROOM_DOOR: "/help/room-door.jpg",
-  ENTRANCE: "/help/6.Entrance.jpg",
+  ENTRANCE: "/help/Entrance.jpg",
   DIALER: "/help/dialer.jpg",
 };
 
@@ -310,24 +312,35 @@ const buildSafe = () => [
 function buildStayInstructions() {
   return [
     "## Instrukce k ubytování",
+    "",
+    "### Check-in & klíče",
     `![](${IMG(P.ENTRANCE)})`,
-    `![](${IMG(P.DIALER)})`,
-    "Klíč od apartmánu nechám v **bílé schránce na klíče** v průchodu do dvora (viz fotky vchodu a číselníku).",
-    "Vstup do průchodu: na **levé stěně** vytočte na číselníku kód **3142#** (viz obrázek).",
+    "**Check-in:** od **14:00** (dříve, pokud je apartmán připraven).",
+    "Pokud přijedete **před 11:00**, využijte prosím **úschovnu zavazadel** vedle schránek na klíče. Kód **3142#**.",
     `![](${IMG(P.LUGGAGE)})`,
-    "Pokud přijedete před časem check-inu, uložte si prosím zavazadla v **úschovně zavazadel** vedle schránky na klíče. Stejný kód **3142#** platí i pro vstup do průchodu. Po uložení se ujistěte, že jsou dveře zavřené.",
-    `![](${IMG(P.KEYBOX_WALL)})`,
-    "Hned vedle je schránka na klíče. Vaše číslo boxu a kód vám poslal David. Po převzetí klíčů schránku zavřete.",
-    "Najdete tam jeden klíč a jeden čip. **Čip** slouží k **hlavním vstupním dveřím** na pravé straně parkoviště.",
-    "Klíč je od vašeho apartmánu a patro vám poslal David. Prosím, nepoužívejte schránku na klíče jako úložiště během pobytu – je určena pouze pro příjezdy.",
+    "",
+    "**Po 11:00:**",
+    "- Pokud je apartmán už uklizený, můžete zůstat přímo uvnitř.",
+    "- Pokud ještě uklizený není, můžete si v něm nechat zavazadla a vrátit se později.",
+    "",
+    "**Schránka na klíče:** bílá schránka v průchodu do dvora.",
+    "Číslo schránky a kód vám **pošle / poslal David**.",
+    "Uvnitř: **klíč** a **čip** (vchodové dveře přes senzor).",
+    "Po vyzvednutí prosím schránku **zavřete** a **nepoužívejte** ji během pobytu jako úložiště.",
+    `![](${IMG(P.KEY_BOX)})`,
+    "",
+    "### Check-out & zavazadla",
+    "**Check-out:** do **11:00**.",
+    "Prosím, opusťte apartmán **nejpozději do 11:00**.",
+    "Hotel má plnou obsazenost a noví hosté obvykle **přijíždějí** brzy po poledni, takže bohužel **není možné** nabídnout pozdní odjezd (late check-out).",
+    "",
+    "Klíč prosím vhoďte do **bílé poštovní schránky** v přízemí, **naproti výtahu** (uvnitř budovy).",
+    `![](${IMG(P.CHECKOUT_BOX)})`,
+    "**Úschovnu zavazadel** můžete využít i po check-outu.",
     "",
     "### Důležité informace",
     "- Název a heslo k Wi-Fi najdete na spodní straně routeru.",
-    "- Televizor nemá naladěné kanály, ale je to Smart TV.",
     "- Klimatizace: režim **Sun** topí, **Snowflake** chladí.",
-    `![](${IMG(P.CHECKOUT_BOX)})`,
-    "- Check-out prosím dokončete před 11:00 – klíč vhoďte do bílé poštovní schránky v přízemí naproti výtahu (viz obrázek).",
-    "- Po odhlášení můžete znovu využít úschovnu zavazadel.",
     `![](${IMG(P.BALCONY)})`,
     "- Všechny pokoje jsou nekuřácké (pokuta 2000 Kč). Kouřit lze pouze na balkonech na každém patře nebo na dvoře.",
     "- Nepoužívejte prosím v apartmánu otevřený oheň.",
@@ -463,7 +476,9 @@ function isKeysFollowUp(messages = []) {
 
   const assistantWasKeys =
     /Zapomenutý klíč|Náhradní klíč|Spare key/i.test(la) ||
-    (la.includes("/help/spare-key.jpg") || la.includes("/help/key-box-wall.jpg"));
+    (la.includes("/help/spare-key.jpg") ||
+      la.includes("/help/key-box-wall.jpg") ||
+      la.includes("Key-box.jpg"));
 
   const userIsRoomOnly = /^\s*(00[1]|10[1-5]|20[1-5]|30[1-5])\s*$/.test(lu);
 
