@@ -49,7 +49,7 @@ const KEYBOX = {
 /** ====== HLÁŠKY ====== */
 const HANDOFF_MSG =
   "Tyto informace zde nevyřizuji. Napište prosím přímo Davidovi. " +
-  "Rád pomohu s ostatním (restaurace, doprava, doporučení v okolí, technické potíže mimo kódy. ";
+  "Rád pomohu s ostatním (restaurace, doprava, doporučení v okolí, technické potíže mimo kódy).";
 
 /** ====== PROMPT ====== */
 const SYSTEM_PROMPT = `You are a helpful hotel concierge for CHILL Apartments.

@@ -5,47 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CHILL Concierge</title>
     <link rel="icon" href="/help/chill1.jpg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
     <style>
-      :root{
-        --bg-grad-1:#fff6ea; --bg-grad-2:#fde7cf;
-        --card:#fffdf7; --border:#eadccd; --muted:#7b6e62; --accent:#2a1f17;
-        --bot:#f6efe6; --me:#e8f2ef;
-        --btn-fill:#e78b2f; --btn-fill-2:#c86a24; --btn-text:#1a120d;
-        --shadow:0 10px 30px rgba(42,31,23,.10); --radius:18px;
-      }
-      *{box-sizing:border-box} html,body{height:100%}
-      body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;color:var(--accent);
-        background: radial-gradient(1200px 800px at 10% -10%, var(--bg-grad-2), transparent 60%),
-                    radial-gradient(900px 700px at 110% 10%, #fbe2b9, transparent 55%),
-                    linear-gradient(180deg, var(--bg-grad-1), #fffaf3 60%);}
-      .wrap{max-width:940px;margin:28px auto 44px;padding:0 16px}
-      .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;}
-      .scroller{max-height:70vh;overflow:auto;padding:8px;border-radius:12px;}
-      .row{display:flex;flex-direction:column;gap:10px}
-      .bubble{border-radius:16px;padding:14px 16px;line-height:1.55;width:fit-content;max-width:100%;white-space:pre-line;border:1px solid var(--border);box-shadow:0 6px 16px rgba(42,31,23,.06);}
-      .me{background:var(--me);margin-left:auto}
-      .bot{background:var(--bot)}
-      .bot p{margin:.55em 0}
-      .bot img{max-width:100%;height:auto;border-radius:14px;display:block;margin:10px 0;box-shadow:0 10px 26px rgba(42,31,23,.12);border:1px solid var(--border);}
-      .input{display:flex;gap:12px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);}
-      textarea{flex:1;resize:vertical;min-height:56px;max-height:200px;padding:12px 14px;border-radius:14px;border:1px solid var(--border);outline:none;background:#fffdf9;}
-      textarea:focus{border-color:#d2bba5;box-shadow:0 0 0 4px rgba(210,187,165,.35)}
-      button{padding:14px 18px;border-radius:14px;border:1px solid color-mix(in oklab, var(--btn-fill), black 14%);
-        background:linear-gradient(180deg, var(--btn-fill), var(--btn-fill-2));color:#fff;cursor:pointer;font-weight:800;letter-spacing:.2px;
-        box-shadow:0 10px 18px rgba(200,106,36,.25);transition:.18s transform ease,.18s box-shadow ease,.18s filter ease;min-width:140px;}
-      button:hover{transform:translateY(-1px);box-shadow:0 14px 26px rgba(200,106,36,.28)}
-      button:active{transform:translateY(0);filter:saturate(.95)}
-      button:disabled{opacity:.6;cursor:not-allowed}
-      .muted{color:var(--muted);font-size:13px;margin-top:8px}
+      *{box-sizing:border-box}
+      html,body{height:100%}
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div class="card">
-        <!-- React sem mountuje aplikaci -->
-        <div id="root"></div>
-      </div>
-    </div>
+    <div id="root"></div>
 
     <noscript>Enable JavaScript to use this app.</noscript>
     <script type="module" src="/src/main.jsx"></script>

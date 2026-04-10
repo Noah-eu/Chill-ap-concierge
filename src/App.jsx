@@ -8,156 +8,247 @@ import DOMPurify from "dompurify";
 const MATTERPORT_URL =
   "https://my.matterport.com/show/?m=PTEAUeUbMno&ss=53&sr=-1.6%2C1.05&tag=8hiaV2GWWhB&pin-pos=20.12%2C-3.85%2C8.94";
 
-/** ================== Google palette + UI (inline CSS) ================== */
-const GoogleStyle = () => (
+/** ================== UI (inline CSS) ================== */
+const AppStyles = () => (
   <style>{`
     :root{
-      --blue:#4285F4; --red:#EA4335; --yellow:#FBBC05; --green:#34A853;
-      --t-blue:   color-mix(in oklab, var(--blue),   white 40%);
-      --t-red:    color-mix(in oklab, var(--red),    white 40%);
-      --t-yellow: color-mix(in oklab, var(--yellow), white 70%);
-      --t-green:  color-mix(in oklab, var(--green),  white 40%);
-      --bg-1:#fffefb; --bg-2:#fbf7ef;
-      --border:color-mix(in oklab, #c9b9a6, white 30%);
-      --muted:#6b645c; --accent:#1f1b16;
+      --ink:#0f1419;
+      --ink-soft:#3d4550;
+      --muted:#5c6570;
+      --surface:#ffffff;
+      --surface-2:#f4f6f9;
+      --border:rgba(15,20,25,.10);
+      --glow:rgba(20,184,166,.18);
+      --accent:#0d9488;
+      --accent-2:#0f766e;
+      --accent-3:#c2410c;
+      --teal:#14b8a6;
+      --coral:#ea580c;
+      --blue: var(--accent);
+      --danger:#dc2626;
+      --radius-lg:20px;
+      --radius-md:14px;
+      --shadow:0 4px 6px -1px rgba(15,20,25,.06), 0 12px 24px -4px rgba(15,20,25,.08);
+      --shadow-lg:0 20px 40px -12px rgba(15,20,25,.15);
     }
 
     body{
-      background:
-        radial-gradient(1200px 700px at 12% -6%, var(--t-yellow) 0%, transparent 50%),
-        radial-gradient(1100px 650px at 100% -10%, var(--t-blue) 0%, transparent 50%),
-        radial-gradient(900px 600px at 40% 120%, var(--t-green) 0%, transparent 50%),
-        linear-gradient(180deg, var(--bg-1), var(--bg-2) 35%);
-      background-attachment: fixed;
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
-      color:var(--accent);
+      min-height:100%;
+      font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1000px 520px at 8% -8%, rgba(20,184,166,.14), transparent 55%),
+        radial-gradient(900px 480px at 92% 0%, rgba(234,88,12,.10), transparent 50%),
+        linear-gradient(165deg, #f8fafc 0%, #eef2f7 48%, #f1f5f9 100%);
+      background-attachment:fixed;
     }
 
     .appHeader{
-      position: sticky; top: 0; z-index: 1500;
-      display: grid; grid-template-columns: 44px 1fr 44px; align-items:center;
-      gap: 8px; padding: 10px 16px;
-      background: linear-gradient(180deg,#ffffffcc,#fff);
-      backdrop-filter: blur(6px);
+      position:sticky;top:0;z-index:1500;
+      display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;
+      padding:12px 18px;
+      background:rgba(255,255,255,.82);
+      backdrop-filter:saturate(140%) blur(12px);
       border-bottom:1px solid var(--border);
+      box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
     }
-    .appHeader .title{ text-align:center; font-weight:900; letter-spacing:.2px; }
-    .appHeader img.logo{ height:38px; width:auto; object-fit:contain; }
+    .appHeader .title{
+      text-align:center;font-weight:800;font-size:1.05rem;letter-spacing:-.02em;
+      background:linear-gradient(120deg,var(--accent),var(--teal));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .appHeader img.logo{height:40px;width:auto;object-fit:contain;border-radius:10px}
 
-    .row{display:flex;flex-direction:column;gap:12px;max-width:960px;margin:12px auto 24px;padding:0 16px}
+    .row{
+      display:flex;flex-direction:column;gap:14px;max-width:920px;margin:16px auto 28px;padding:0 18px;
+    }
     .scroller{
-      max-height:70vh;overflow:auto;padding:8px;border-radius:14px;
-      background: linear-gradient(180deg, color-mix(in oklab, var(--t-blue), white 70%) 0%, transparent 85%);
-      scroll-behavior: auto;
+      max-height:min(68vh,560px);overflow:auto;padding:14px;border-radius:var(--radius-lg);
+      background:var(--surface);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      scroll-behavior:auto;
     }
 
     .bubble{
-      border-radius:16px;padding:12px 14px;line-height:1.35;width:fit-content;max-width:100%;white-space:pre-line;
-      border:1px solid var(--border);box-shadow:0 6px 16px rgba(0,0,0,.06);background:#fff;
+      border-radius:var(--radius-md);padding:12px 16px;line-height:1.45;width:fit-content;max-width:100%;white-space:pre-line;
+      border:1px solid var(--border);background:var(--surface);box-shadow:0 2px 8px rgba(15,20,25,.04);
     }
-    .me{background:linear-gradient(180deg, color-mix(in oklab, var(--t-blue), white 10%), color-mix(in oklab, var(--t-blue), white 0%));margin-left:auto;}
-    .bot{background:linear-gradient(180deg, color-mix(in oklab, var(--t-yellow), white 8%), color-mix(in oklab, var(--t-yellow), white 0%));}
+    .me{
+      margin-left:auto;
+      background:linear-gradient(145deg, #ecfdf5, #d1fae5);
+      border-color:rgba(20,184,166,.25);
+    }
+    .bot{
+      background:linear-gradient(180deg, #fffefb, #faf8f5);
+      border-color:rgba(234,88,12,.12);
+    }
 
-    .bot p{ margin:4px 0; }
-    .bot ul, .bot ol{ margin:6px 0; padding-left:18px; }
-    .bot li{ margin:2px 0; }
-    .bot li p{ margin:0; }
-    .bot li p + p{ margin-top:2px; }
+    .bot p{margin:6px 0}
+    .bot ul,.bot ol{margin:8px 0;padding-left:20px}
+    .bot li{margin:3px 0}
+    .bot li p{margin:0}
+    .bot li p + p{margin-top:4px}
 
-    .bot img{max-width:100%;height:auto;border-radius:14px;display:block;margin:8px 0;box-shadow:0 10px 26px rgba(0,0,0,.10);border:1px solid var(--border);} 
-    .bot a{display:inline-block;padding:8px 12px;border-radius:999px;border:1px solid color-mix(in oklab, var(--blue), black 15%);
-      background:linear-gradient(180deg, color-mix(in oklab, var(--blue), white 8%), color-mix(in oklab, var(--blue), black 6%));
-      color:#fff;text-decoration:none;font-weight:800;box-shadow:0 6px 16px rgba(66,133,244,.25);} 
+    .bot img{
+      max-width:100%;height:auto;border-radius:var(--radius-md);display:block;margin:10px 0;
+      box-shadow:var(--shadow);border:1px solid var(--border);
+    }
+    .bot a{
+      display:inline-block;padding:10px 16px;border-radius:999px;margin:4px 4px 0 0;
+      border:1px solid color-mix(in oklab, var(--accent), black 12%);
+      background:linear-gradient(180deg, var(--accent), var(--accent-2));
+      color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;
+      box-shadow:0 6px 16px rgba(13,148,136,.28);
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+    .bot a:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.32)}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:8px;width:100%;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;width:100%}
     .chipPrimary{
-      --btn: var(--blue);
-      padding:12px 14px;border-radius:999px;border:1px solid color-mix(in oklab, var(--btn), black 18%);
-      background:linear-gradient(180deg, color-mix(in oklab, var(--btn), white 6%), color-mix(in oklab, var(--btn), black 4%));
-      color:#fff;font-weight:800;letter-spacing:.15px;box-shadow:0 8px 16px color-mix(in oklab, var(--btn), transparent 80%);
-      cursor:pointer;transition:.18s transform ease,.18s box-shadow ease,.18s filter ease;text-align:center;
+      --btn:var(--accent);
+      padding:13px 16px;border-radius:999px;
+      border:1px solid color-mix(in oklab,var(--btn),black 14%);
+      background:linear-gradient(165deg,color-mix(in oklab,var(--btn),white 8%),var(--btn));
+      color:#fff;font-weight:700;font-size:.92rem;letter-spacing:.01em;
+      box-shadow:0 6px 18px color-mix(in oklab,var(--btn),transparent 72%);
+      cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;text-align:center;
     }
-    .chipPrimary:hover{transform:translateY(-1px);box-shadow:0 12px 22px color-mix(in oklab, var(--btn), transparent 75%)}
-    .chipPrimary:active{transform:translateY(0);filter:saturate(.96)}
-    .chipPrimary:disabled{opacity:.6;cursor:not-allowed}
+    .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 10px 26px color-mix(in oklab,var(--btn),transparent 65%)}
+    .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
+    .chipPrimary:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
-    .chip{ 
-      --btn: var(--yellow);
-      padding:12px 14px;border-radius:999px;border:1px solid color-mix(in oklab, var(--btn), black 18%);
-      background:linear-gradient(180deg, color-mix(in oklab, var(--btn), white 38%), color-mix(in oklab, var(--btn), white 20%));
-      color:#1c130f;font-weight:800;letter-spacing:.1px;box-shadow:0 4px 12px rgba(0,0,0,.05);
-      cursor:pointer;text-align:center;
-    }
-
-    .backBtn{ 
-      padding:10px 14px;border-radius:14px;border:1px solid var(--border);
-      background:linear-gradient(180deg, #fff, color-mix(in oklab, var(--t-yellow), white 10%));
-      color:var(--accent);font-weight:700;cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.05);
-    }
-
-    .tips{color:var(--muted);font-size:13px;margin-top:4px}
-
-    .shortcuts{ 
+    .chip{
+      --btn:var(--surface-2);
+      padding:13px 16px;border-radius:999px;
       border:1px solid var(--border);
-      background:
-        radial-gradient(800px 400px at 10% -40%, color-mix(in oklab, var(--t-yellow), white 20%) 0%, transparent 60%),
-        radial-gradient(700px 380px at 100% -40%, color-mix(in oklab, var(--t-blue), white 20%) 0%, transparent 55%),
-        linear-gradient(180deg, #fff, color-mix(in oklab, var(--t-yellow), white 6%));
-      box-shadow:0 6px 16px rgba(0,0,0,.06);border-radius:16px;padding:12px 14px; 
-      scroll-margin-top:12px;
+      background:linear-gradient(180deg,#fff,var(--surface-2));
+      color:var(--ink-soft);font-weight:700;font-size:.9rem;
+      box-shadow:0 2px 6px rgba(15,20,25,.04);
+      cursor:pointer;text-align:center;transition:transform .15s ease,border-color .15s ease;
     }
-    .shortcutsHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+    .chip:hover{transform:translateY(-1px);border-color:rgba(13,148,136,.35)}
 
-    .btnRow{display:flex;gap:8px;flex-wrap:wrap;}
+    .backBtn{
+      padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+      background:var(--surface);color:var(--ink-soft);font-weight:600;font-size:.88rem;
+      cursor:pointer;box-shadow:0 2px 6px rgba(15,20,25,.04);
+      transition:background .15s ease,border-color .15s ease;
+    }
+    .backBtn:hover{background:var(--surface-2);border-color:rgba(13,148,136,.25)}
 
-    .contactBar{ 
-      margin-top:4px;padding:10px 12px;border:1px dashed var(--border);border-radius:12px;
-      background:linear-gradient(180deg, color-mix(in oklab, var(--t-yellow), white 10%), color-mix(in oklab, var(--t-yellow), white 2%));
-      color:var(--accent);font-size:14px; 
+    .tips{color:var(--muted);font-size:13px;line-height:1.4;margin-top:6px}
+
+    .searchPanel{
+      border-radius:var(--radius-lg);padding:16px 18px;
+      background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);
+      scroll-margin-top:14px;
+    }
+    .searchPanel label.searchLabel{
+      display:block;font-weight:800;font-size:.95rem;letter-spacing:-.01em;margin-bottom:8px;color:var(--ink);
+    }
+    .searchWrap{position:relative}
+    .searchInputRow{
+      display:flex;align-items:center;gap:10px;
+      padding:4px 4px 4px 14px;border-radius:999px;
+      border:1px solid var(--border);background:var(--surface-2);
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    .searchWrap:focus-within .searchInputRow{
+      border-color:rgba(20,184,166,.45);
+      box-shadow:0 0 0 4px var(--glow);background:#fff;
+    }
+    .searchIcon{opacity:.45;font-size:1.1rem;flex-shrink:0}
+    .searchInput{
+      flex:1;min-width:0;border:none;background:transparent;
+      font:inherit;font-size:1rem;padding:12px 8px;outline:none;color:var(--ink);
+    }
+    .searchInput::placeholder{color:var(--muted);opacity:.85}
+    .searchResults{
+      position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1200;
+      max-height:min(52vh,360px);overflow:auto;margin:0;padding:6px;list-style:none;
+      background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+      box-shadow:var(--shadow-lg);
+    }
+    .searchResults li{margin:0}
+    .searchHit{
+      width:100%;text-align:left;padding:12px 14px;border:none;border-radius:10px;
+      background:transparent;font:inherit;cursor:pointer;
+      display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+      transition:background .12s ease;
+    }
+    .searchHit:hover,.searchHit:focus-visible{background:var(--surface-2);outline:none}
+    .searchHitTitle{font-weight:700;color:var(--ink);font-size:.95rem}
+    .searchHitTrail{font-size:12px;color:var(--muted);line-height:1.3}
+    .searchHitScore{font-size:11px;color:var(--muted);opacity:.7}
+    .searchEmpty{padding:12px 14px;color:var(--muted);font-size:14px}
+
+    .shortcuts{
+      border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;
+      background:linear-gradient(165deg,#fff 0%,#f8fafc 100%);
+      box-shadow:var(--shadow);scroll-margin-top:14px;
+    }
+    .shortcutsHeader{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+    .shortcutsHeader strong{font-size:1rem;letter-spacing:-.02em}
+
+    .btnRow{display:flex;gap:8px;flex-wrap:wrap}
+
+    .contactBar{
+      margin-top:2px;padding:14px 16px;border-radius:var(--radius-md);
+      border:1px dashed rgba(13,148,136,.35);
+      background:linear-gradient(90deg,rgba(236,253,245,.9),rgba(255,251,235,.85));
+      color:var(--ink-soft);font-size:14px;line-height:1.45;
     }
 
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);display:flex;align-items:flex-end;justify-content:center;padding:18px;z-index:2000;}
-    .sheet{width:100%;max-width:700px;border-radius:18px;background:#fff;border:1px solid var(--border);box-shadow:0 18px 38px rgba(0,0,0,.20);padding:16px;}
-    .sheet h4{margin:0 0 10px 0}
+    .overlay{position:fixed;inset:0;background:rgba(15,20,25,.4);backdrop-filter:blur(4px);
+      display:flex;align-items:flex-end;justify-content:center;padding:18px;z-index:2000}
+    .sheet{
+      width:100%;max-width:560px;border-radius:var(--radius-lg) var(--radius-lg) 12px 12px;
+      background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);padding:20px;
+    }
+    .sheet h4{margin:0 0 12px 0;font-size:1.1rem}
 
     .pillRow{display:flex;gap:8px;flex-wrap:wrap}
-    .pill{ 
+    .pill{
       padding:10px 14px;border-radius:999px;border:1px solid var(--border);
-      background:#ffffff;color:var(--blue);
-      cursor:pointer;font-weight:800;letter-spacing:.1px; 
+      background:var(--surface);color:var(--accent);cursor:pointer;font-weight:700;font-size:.88rem;
+      transition:background .15s ease,border-color .15s ease;
     }
-    .pill.active{ 
-      border:1px solid color-mix(in oklab, var(--blue), black 18%);
-      background:linear-gradient(180deg, color-mix(in oklab, var(--blue), white 6%), color-mix(in oklab, var(--blue), black 4%));
-      color:#fff; 
+    .pill:hover{border-color:rgba(13,148,136,.4)}
+    .pill.active{
+      border-color:color-mix(in oklab,var(--accent),black 10%);
+      background:linear-gradient(165deg,var(--accent),var(--accent-2));color:#fff;
     }
 
-    .fabStack{ 
-      position:fixed;left:50%;transform:translateX(-50%);
-      bottom:18px;z-index:1100;display:flex;flex-direction:column;gap:10px; 
+    .fabStack{
+      position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:1100;
+      display:flex;flex-direction:column;gap:10px;
     }
-    .fabAction{ 
-      border:none;border-radius:999px;padding:12px 18px;font-weight:800;
-      background:linear-gradient(180deg, color-mix(in oklab, var(--blue), white 6%), color-mix(in oklab, var(--blue), black 4%));
-      color:#fff;box-shadow:0 10px 24px rgba(66,133,244,.35);cursor:pointer;min-width:220px;text-align:center; 
+    .fabAction{
+      border:none;border-radius:999px;padding:14px 22px;font-weight:700;font-size:.95rem;
+      background:linear-gradient(165deg,var(--accent),var(--accent-2));
+      color:#fff;box-shadow:0 12px 28px rgba(13,148,136,.35);cursor:pointer;min-width:240px;text-align:center;
     }
 
     .fab{
-      position:fixed;right:16px;bottom:90px;z-index:1000;border:none;border-radius:999px;padding:12px 14px;font-weight:800;
-      box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;
-      color:#fff;
-    }
-    .fabBack{
-      background:linear-gradient(180deg, color-mix(in oklab, var(--red), white 6%), color-mix(in oklab, var(--red), black 4%));
-      border:1px solid color-mix(in oklab, var(--red), black 18%);
+      position:fixed;right:18px;bottom:96px;z-index:1000;border:none;border-radius:999px;
+      padding:12px 16px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
+      box-shadow:0 10px 28px rgba(220,38,38,.35);
+      background:linear-gradient(165deg,#ef4444,#dc2626);
+      border:1px solid color-mix(in oklab,var(--danger),black 8%);
     }
 
-    .langSingle{ display:flex; justify-content:center; margin-top:8px; }
-    .langGrid2{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-top:8px; }
+    .langCard{max-width:420px;margin:0 auto}
+    .langSingle{display:flex;justify-content:center;margin-top:12px}
+    .langGrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 
     @media (max-width:480px){
-      .row{ padding-bottom:80px; }
+      .row{padding-bottom:88px}
+      .appHeader{padding:10px 14px}
+    }
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
     }
   `}</style>
 );
@@ -457,13 +548,172 @@ const tr = {
        aRooms:"🛏️ Pokoje", aKitchen:"🍳 Kuchnia", aBathroom:"🛁 Łazienka", aService:"🧰 Pralnia, bagaż, śmieci" }
 };
 
-/** ===== helper bez fallbacku ===== */
-// Použij vždy JEN aktivní jazyk; pokud klíč chybí, vrať název klíče (aby se chyba odhalila).
-const t = (lang, key) => (tr[lang] && tr[lang][key]) ?? key;
+/** Vyhledávání (klíče mimo `tr` kvůli přehlednosti) */
+const searchI18n = {
+  cs: {
+    searchLabel: "Rychlé vyhledávání",
+    searchPlaceholder: "Co hledáte? (Wi‑Fi, snídaně, prádelna…)",
+    searchNoResults: "Zkuste jiná slova nebo vyberte téma níže.",
+    searchHint: "Najdeme nejbližší položku v menu podle vašeho dotazu.",
+    searchGo: "Otevřít",
+  },
+  en: {
+    searchLabel: "Quick search",
+    searchPlaceholder: "What do you need? (Wi‑Fi, breakfast, laundry…)",
+    searchNoResults: "Try different words or pick a topic below.",
+    searchHint: "We match the closest menu option to what you type.",
+    searchGo: "Open",
+  },
+  es: {
+    searchLabel: "Búsqueda rápida",
+    searchPlaceholder: "¿Qué necesitas? (Wi‑Fi, desayuno, lavandería…)",
+    searchNoResults: "Prueba otras palabras o elige un tema abajo.",
+    searchHint: "Mostramos la opción del menú más parecida a lo que escribes.",
+    searchGo: "Abrir",
+  },
+  de: {
+    searchLabel: "Schnellsuche",
+    searchPlaceholder: "Wonach suchst du? (WLAN, Frühstück, Wäscherei…)",
+    searchNoResults: "Andere Wörter versuchen oder unten ein Thema wählen.",
+    searchHint: "Wir finden den passendsten Menüpunkt zu deiner Eingabe.",
+    searchGo: "Öffnen",
+  },
+  fr: {
+    searchLabel: "Recherche rapide",
+    searchPlaceholder: "Que cherchez-vous ? (Wi‑Fi, petit-déj, laverie…)",
+    searchNoResults: "Essayez d’autres mots ou choisissez un sujet ci-dessous.",
+    searchHint: "Nous proposons l’entrée de menu la plus proche de votre texte.",
+    searchGo: "Ouvrir",
+  },
+  ru: {
+    searchLabel: "Быстрый поиск",
+    searchPlaceholder: "Что нужно? (Wi‑Fi, завтрак, прачечная…)",
+    searchNoResults: "Попробуйте другие слова или выберите тему ниже.",
+    searchHint: "Показываем ближайший пункт меню к вашему запросу.",
+    searchGo: "Открыть",
+  },
+  uk: {
+    searchLabel: "Швидкий пошук",
+    searchPlaceholder: "Що потрібно? (Wi‑Fi, сніданок, пральня…)",
+    searchNoResults: "Спробуйте інші слова або оберіть тему нижче.",
+    searchHint: "Показуємо найближчий пункт меню до вашого запиту.",
+    searchGo: "Відкрити",
+  },
+  nl: {
+    searchLabel: "Snel zoeken",
+    searchPlaceholder: "Waar ben je naar op zoek? (Wi‑Fi, ontbijt, wasserette…)",
+    searchNoResults: "Probeer andere woorden of kies hieronder een onderwerp.",
+    searchHint: "We tonen het dichtstbijzijnde menu-item bij je invoer.",
+    searchGo: "Openen",
+  },
+  it: {
+    searchLabel: "Ricerca veloce",
+    searchPlaceholder: "Di cosa hai bisogno? (Wi‑Fi, colazione, lavanderia…)",
+    searchNoResults: "Prova altre parole o scegli un argomento qui sotto.",
+    searchHint: "Troviamo la voce di menu più vicina a ciò che scrivi.",
+    searchGo: "Apri",
+  },
+  da: {
+    searchLabel: "Hurtigsøgning",
+    searchPlaceholder: "Hvad har du brug for? (Wi‑Fi, morgenmad, vaskeri…)",
+    searchNoResults: "Prøv andre ord eller vælg et emne nedenfor.",
+    searchHint: "Vi finder det menupunkt, der ligger tættest på det, du skriver.",
+    searchGo: "Åbn",
+  },
+  pl: {
+    searchLabel: "Szybkie wyszukiwanie",
+    searchPlaceholder: "Czego szukasz? (Wi‑Fi, śniadanie, pralnia…)",
+    searchNoResults: "Spróbuj innych słów lub wybierz temat poniżej.",
+    searchHint: "Pokazujemy najbliższą pozycję menu do Twojego zapytania.",
+    searchGo: "Otwórz",
+  },
+};
+
+/** ===== helper: překlady ===== */
+const t = (lang, key) =>
+  tr[lang]?.[key] ?? searchI18n[lang]?.[key] ?? searchI18n.en[key] ?? key;
+
+/** ===== vyhledávání: normalizace + skóre ===== */
+const stripForSearch = (s) =>
+  String(s || "")
+    .replace(/\p{Extended_Pictographic}/gu, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const normalizeSearch = (s) =>
+  stripForSearch(s)
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase();
+
+function levenshtein(a, b) {
+  if (a.length < b.length) [a, b] = [b, a];
+  if (!b.length) return a.length;
+  const row = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = row[j];
+      row[j] =
+        a[i - 1] === b[j - 1]
+          ? prev
+          : 1 + Math.min(prev, row[j], row[j - 1]);
+      prev = tmp;
+    }
+  }
+  return row[b.length];
+}
+
+function scoreMatch(queryRaw, labelRaw) {
+  const q = normalizeSearch(queryRaw);
+  const full = normalizeSearch(labelRaw);
+  if (!q.length) return 0;
+  const words = full.split(/\s+/).filter(Boolean);
+  const qw = q.split(/\s+/).filter(Boolean);
+
+  if (full === q) return 1000;
+  if (full.startsWith(q)) return 920;
+  if (full.includes(q)) return 820;
+
+  let wordHits = 0;
+  for (const w of qw) {
+    if (words.some((x) => x.includes(w) || w.includes(x))) wordHits++;
+  }
+  if (wordHits && qw.length) return 500 + (wordHits / qw.length) * 200;
+
+  const dist = levenshtein(q, full);
+  const maxLen = Math.max(q.length, full.length, 1);
+  const sim = 1 - dist / maxLen;
+  if (sim >= 0.55 && maxLen <= 48) return sim * 400;
+
+  for (const w of words) {
+    if (w.length >= 3) {
+      const d = levenshtein(q, w);
+      const m = Math.max(q.length, w.length, 1);
+      const s = 1 - d / m;
+      if (s >= 0.65) return s * 320;
+    }
+  }
+  return 0;
+}
+
+/** Všechny uzly menu s cestou `stack` (předci pro správné `setStack`) */
+function enumerateFlowEntries(nodes, ancestors = []) {
+  const out = [];
+  for (const n of nodes) {
+    out.push({ node: n, stack: ancestors });
+    if (n.children?.length) {
+      out.push(...enumerateFlowEntries(n.children, [...ancestors, n]));
+    }
+  }
+  return out;
+}
 
 /** ================== barvy ============== */
 const btnColorForIndex = (i) =>
-  [ "var(--blue)", "var(--red)", "var(--yellow)", "var(--green)" ][i % 4];
+  [ "var(--accent)", "var(--accent-2)", "var(--accent-3)", "var(--teal)" ][i % 4];
 
 /** ================== App ================== */
 export default function App(){
@@ -472,22 +722,24 @@ export default function App(){
   const [chat, setChat]   = useState([]);
   const [loading, setLoading] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
 
   // Overlays
   const [roomSheet, setRoomSheet] = useState({ open:false, floor:null, last:null }); // keys (interní)
   const [wifiRoomSheet, setWifiRoomSheet] = useState({ open:false, floor:null, last:null });
   const [wifiSsidSheet, setWifiSsidSheet] = useState({ open:false, ssid:null });
 
-  // CTA tlačítka pod bublinou
-  const [showKeysCta, setShowKeysCta] = useState(false);
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
 
   const scrollerRef = useRef(null);
   const shortcutsRef = useRef(null);
+  const searchWrapRef = useRef(null);
+  const searchPanelRef = useRef(null);
 
-  const scrollToShortcuts = () => {
+  const scrollToMainNav = () => {
     requestAnimationFrame(() => {
-      shortcutsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      searchPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
 
@@ -509,10 +761,18 @@ export default function App(){
     }
   }, [chat]);
 
-  // Po otevření zkratek skoč na ně
+  // Po výběru jazyka / otevření menu skoč na vyhledávání a témata
   useEffect(() => {
-    if (lang && shortcutsOpen) scrollToShortcuts();
+    if (lang && shortcutsOpen) scrollToMainNav();
   }, [lang, shortcutsOpen]);
+
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (!searchWrapRef.current?.contains(e.target)) setSearchDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
 
   /** ====== FLOWS ====== */
   function makeFlows(activeLang){
@@ -581,6 +841,22 @@ export default function App(){
     ];
   }
   const FLOWS = useMemo(() => (lang ? makeFlows(lang) : []), [lang]);
+
+  const searchIndex = useMemo(
+    () => (FLOWS.length ? enumerateFlowEntries(FLOWS) : []),
+    [FLOWS]
+  );
+
+  const searchHits = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!lang || !q || normalizeSearch(q).length < 2) return [];
+    const ranked = searchIndex
+      .map((e) => ({ ...e, score: scoreMatch(q, e.node.label) }))
+      .filter((e) => e.score >= 120)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 12);
+    return ranked;
+  }, [lang, searchQuery, searchIndex]);
 
   function renderAssistant(md=""){
     const raw = marked.parse(md, { breaks:true });
@@ -652,16 +928,23 @@ export default function App(){
     }
   };
 
-  // interní (ponecháno)
-  const floors = [0,1,2,3];
-  const lasts  = ["01","02","03","04","05"];
+  function applySearchHit(entry) {
+    setSearchQuery("");
+    setSearchDropdownOpen(false);
+    setStack(entry.stack);
+    setShortcutsOpen(true);
+    setWifiCtas({ showPassword:false, showNotOk:false });
+    requestAnimationFrame(() => {
+      scrollToMainNav();
+      onChipClick(entry.node);
+    });
+  }
 
   const confirmRoom = () => {
     const { floor, last } = roomSheet;
     if (floor === null || last === null) return;
     const room = `${floor}${last}`.padStart(3, "0");
     setRoomSheet({ open:false, floor:null, last:null });
-    setShowKeysCta(false);
     return sendControl(`Náhradní klíč ${room}`, { intent:"tech", sub:"keys", room });
   };
 
@@ -699,9 +982,10 @@ export default function App(){
             onClick={() => {
               setLang("en");
               resetToRoot();
+              setSearchQuery("");
               setWifiCtas({ showPassword:false, showNotOk:false });
               setShortcutsOpen(true);
-              scrollToShortcuts();
+              scrollToMainNav();
             }}
           >
             {first?.[1] || "English"}
@@ -717,9 +1001,10 @@ export default function App(){
               onClick={() => {
                 setLang(code);
                 resetToRoot();
+                setSearchQuery("");
                 setWifiCtas({ showPassword:false, showNotOk:false });
                 setShortcutsOpen(true);
-                scrollToShortcuts();
+                scrollToMainNav();
               }}
             >
               {label}
@@ -736,7 +1021,7 @@ export default function App(){
 
   return (
     <>
-      <GoogleStyle />
+      <AppStyles />
 
       {/* Header */}
       <header className="appHeader">
@@ -757,6 +1042,66 @@ export default function App(){
           )}
         </div>
 
+        {/* Vyhledávání (po výběru jazyka) */}
+        {lang && (
+          <section className="searchPanel" ref={searchPanelRef} aria-label={t(lang, "searchLabel")}>
+            <label className="searchLabel" htmlFor="concierge-search">
+              {t(lang, "searchLabel")}
+            </label>
+            <p className="tips" style={{ marginTop: 0, marginBottom: 10 }}>
+              {t(lang, "searchHint")}
+            </p>
+            <div className="searchWrap" ref={searchWrapRef}>
+              <div className="searchInputRow">
+                <span className="searchIcon" aria-hidden>
+                  ⌕
+                </span>
+                <input
+                  id="concierge-search"
+                  className="searchInput"
+                  type="search"
+                  autoComplete="off"
+                  enterKeyHint="search"
+                  placeholder={t(lang, "searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchDropdownOpen(true);
+                  }}
+                  onFocus={() => setSearchDropdownOpen(true)}
+                />
+              </div>
+              {searchDropdownOpen && normalizeSearch(searchQuery).length >= 2 && (
+                <ul className="searchResults" role="listbox">
+                  {searchHits.length === 0 ? (
+                    <li className="searchEmpty" role="option">
+                      {t(lang, "searchNoResults")}
+                    </li>
+                  ) : (
+                    searchHits.map((hit, i) => (
+                      <li key={`${hit.node.label}-${i}-${hit.score}`} role="option">
+                        <button
+                          type="button"
+                          className="searchHit"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => applySearchHit(hit)}
+                        >
+                          <span className="searchHitTitle">{hit.node.label}</span>
+                          {hit.stack.length > 0 && (
+                            <span className="searchHitTrail">
+                              {hit.stack.map((s) => s.label).join(" › ")}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* ZKRATKY */}
         {lang && currentChildren && shortcutsOpen && (
           <div className="shortcuts" ref={shortcutsRef}>
@@ -769,7 +1114,7 @@ export default function App(){
                     onClick={() => {
                       goBack();
                       setWifiCtas({ showPassword:false, showNotOk:false });
-                      scrollToShortcuts();
+                      scrollToMainNav();
                     }}
                   >
                     {t(lang,"back")}
@@ -783,6 +1128,7 @@ export default function App(){
                   onClick={() => {
                     setLang(null);
                     setStack([]);
+                    setSearchQuery("");
                     setWifiCtas({ showPassword:false, showNotOk:false });
                     setShortcutsOpen(false);
                     requestAnimationFrame(() => {
@@ -828,11 +1174,11 @@ export default function App(){
         {/* FAB: když jsou zkratky zavřené → červené tlačítko „← Zpět“ (jen znovu otevře menu) */}
         {!shortcutsOpen && lang && (
           <button
-            className="fab fabBack"
+            className="fab"
             onClick={() => {
               setShortcutsOpen(true);
               requestAnimationFrame(() => {
-                shortcutsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                scrollToMainNav();
               });
             }}
             title={t(lang,"back")}
@@ -842,16 +1188,11 @@ export default function App(){
         )}
 
         {/* Kontaktní lišta */}
-        <div className="contactBar">{t(lang,"contact")}</div>
+        {lang && <div className="contactBar">{t(lang, "contact")}</div>}
       </div>
 
       {/* ===== CTA STACK ===== */}
       <div className="fabStack" aria-live="polite">
-        {showKeysCta && (
-          <button className="fabAction" onClick={() => setRoomSheet({ open:true, floor:null, last:null })}>
-            {t(lang,"pickRoom")}
-          </button>
-        )}
         {wifiCtas.showPassword && (
           <button className="fabAction" onClick={() => setWifiRoomSheet({ open:true, floor:null, last:null })}>
             {t(lang,"showMyWifi")}
