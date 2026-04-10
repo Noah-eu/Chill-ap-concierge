@@ -36,7 +36,6 @@ const L = {
     smoking:     { label: "Kouření / balkony", prompt: "kde se kouří na balkonech" },
     access:      { label: "Bezbariérovost",  prompt: "je budova bezbariérová" },
     trash:       { label: "Odpadky / popelnice", prompt: "kde jsou popelnice a pytle" },
-    gate:        { label: "Otevírání brány", prompt: "jak otevřít bránu zevnitř i z ulice" },
     doorbells:   { label: "Zvonky na apartmány", prompt: "kde jsou domovní zvonky" },
     linen:       { label: "Povlečení / ručníky", prompt: "kde je skříň s povlečením a ručníky" },
     doctor:      { label: "Doktor 24/7",     prompt: "kontakt na lékaře 24 hodin" },
@@ -77,7 +76,6 @@ const L = {
     smoking:     { label: "Smoking / balconies", prompt: "Where can I smoke on the balconies" },
     access:      { label: "Accessibility",    prompt: "Is the building accessible" },
     trash:       { label: "Trash / bins",     prompt: "Where are the trash bins and spare bags" },
-    gate:        { label: "Gate opening",     prompt: "How to open the gate from inside and street" },
     doorbells:   { label: "Apartment doorbells", prompt: "Where are the apartment doorbells" },
     linen:       { label: "Linen / towels",   prompt: "Where is the linen/towels cabinet" },
     doctor:      { label: "Doctor 24/7",      prompt: "Doctor contact – 24/7 service" },
@@ -105,7 +103,7 @@ const L = {
     luggage:{label:"Consigna & check-out",prompt:"Where is the luggage room after 11:00 and how to check out"}, spare_key:{label:"Llave de repuesto",prompt:"I forgot my key – need a spare key"},
     laundry:{label:"Lavandería",prompt:"Where is the laundry room"}, smoking:{label:"Fumar / balcones",prompt:"Where can I smoke on the balconies"},
     access:{label:"Accesibilidad",prompt:"Is the building accessible"}, trash:{label:"Basura / contenedores",prompt:"Where are the trash bins and spare bags"},
-    gate:{label:"Apertura de la puerta",prompt:"How to open the gate from inside and street"}, doorbells:{label:"Timbres",prompt:"Where are the apartment doorbells"},
+    doorbells:{label:"Timbres",prompt:"Where are the apartment doorbells"},
     linen:{label:"Ropa de cama / toallas",prompt:"Where is the linen/towels cabinet"}, doctor:{label:"Médico 24/7",prompt:"Doctor contact – 24/7 service"},
     breakfast:{label:"Desayuno",prompt:"Recommend breakfast places within 200 m"}, cafe:{label:"Cafetería / panadería",prompt:"Recommend cafes and bakeries within 200 m"},
     veggie:{label:"Vegano/vegetariano",prompt:"Recommend vegan or vegetarian within 200 m"}, czech:{label:"Cocina checa",prompt:"Recommend Czech food within 200 m"},
@@ -125,7 +123,7 @@ const L = {
     luggage:{label:"Gepäckraum & Check-out",prompt:"Where is the luggage room after 11:00 and how to check out"}, spare_key:{label:"Ersatzschlüssel",prompt:"I forgot my key – need a spare key"},
     laundry:{label:"Waschküche",prompt:"Where is the laundry room"}, smoking:{label:"Rauchen / Balkone",prompt:"Where can I smoke on the balconies"},
     access:{label:"Barrierefreiheit",prompt:"Is the building accessible"}, trash:{label:"Müll / Tonnen",prompt:"Where are the trash bins and spare bags"},
-    gate:{label:"Tor öffnen",prompt:"How to open the gate from inside and street"}, doorbells:{label:"Klingeln",prompt:"Where are the apartment doorbells"},
+    doorbells:{label:"Klingeln",prompt:"Where are the apartment doorbells"},
     linen:{label:"Bettwäsche / Handtücher",prompt:"Where is the linen/towels cabinet"}, doctor:{label:"Arzt 24/7",prompt:"Doctor contact – 24/7 service"},
     breakfast:{label:"Frühstück",prompt:"Recommend breakfast places within 200 m"}, cafe:{label:"Café / Bäckerei",prompt:"Recommend cafes and bakeries within 200 m"},
     veggie:{label:"Vegan/vegetarisch",prompt:"Recommend vegan or vegetarian within 200 m"}, czech:{label:"Tschechische Küche",prompt:"Recommend Czech food within 200 m"},
@@ -145,7 +143,7 @@ const L = {
     luggage:{label:"Consigne & check-out",prompt:"Where is the luggage room after 11:00 and how to check out"}, spare_key:{label:"Clé de secours",prompt:"I forgot my key – need a spare key"},
     laundry:{label:"Buanderie",prompt:"Where is the laundry room"}, smoking:{label:"Fumer / balcons",prompt:"Where can I smoke on the balconies"},
     access:{label:"Accessibilité",prompt:"Is the building accessible"}, trash:{label:"Poubelles / sacs",prompt:"Where are the trash bins and spare bags"},
-    gate:{label:"Ouverture du portail",prompt:"How to open the gate from inside and street"}, doorbells:{label:"Sonnette",prompt:"Where are the apartment doorbells"},
+    doorbells:{label:"Sonnette",prompt:"Where are the apartment doorbells"},
     linen:{label:"Linge / serviettes",prompt:"Where is the linen/towels cabinet"}, doctor:{label:"Médecin 24/7",prompt:"Doctor contact – 24/7 service"},
     breakfast:{label:"Petit-déjeuner",prompt:"Recommend breakfast places within 200 m"}, cafe:{label:"Café / boulangerie",prompt:"Recommend cafes and bakeries within 200 m"},
     veggie:{label:"Vegan/végétarien",prompt:"Recommend vegan or vegetarian within 200 m"}, czech:{label:"Cuisine tchèque",prompt:"Recommend Czech food within 200 m"},
@@ -162,7 +160,7 @@ export const FLOWS = Object.fromEntries(
       t.wifi, t.power, t.hot_water, t.ac, t.induction, t.hood, t.coffee, t.fire_alarm, t.safe, t.elevator
     ];
     const houseChildren = [
-      t.luggage, t.spare_key, t.laundry, t.smoking, t.access, t.trash, t.gate, t.doorbells, t.linen, t.doctor
+      t.luggage, t.spare_key, t.laundry, t.smoking, t.access, t.trash, t.doorbells, t.linen, t.doctor
     ];
     const localChildren = [
       t.breakfast, t.cafe, t.veggie, t.czech, t.vietnam, t.grocery, t.pharmacy, t.exchange, t.atm

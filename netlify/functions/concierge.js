@@ -178,7 +178,6 @@ const P = {
   CHECKOUT_BOX: "/help/check-out-box.jpg",
   SPARE_KEY: "/help/spare-key.jpg",
   GARBAGE: "/help/garbage.jpg",
-  GATE_SWITCH: "/help/inside-gate-switch.jpg",
   DOOR_BELLS: "/help/door-bells.jpg",
   ENTRY_DIAL: "/help/entry-dialer.jpg",
   KEYBOX_WALL: "/help/key-box-wall.jpg",
@@ -246,7 +245,7 @@ function buildLuggageInfo() {
     "Nejprve prosím **vhoďte klíče do check-out boxu**.",
     `![](${IMG(P.LUGGAGE)})`,
     `Potom můžete **po 11:00** uložit zavazadla v **úschovně batožiny** – je v průjezdu **vedle schránky na klíče**.`,
-    `**Kód je stejný jako pro bránu.** Po uložení prosím **zkontrolujte, že jsou dveře zavřené**.`
+    `**Kód na číselníku u vchodu do průchodu je 3142#.** Po uložení prosím **zkontrolujte, že jsou dveře zavřené**.`
   ].join("\n");
 }
 
@@ -267,12 +266,6 @@ const buildTrash = () => [
   `![](${IMG(P.GARBAGE)})`,
   "🗑️ **Popelnice** jsou **venku na dvoře**.",
   "Až vyndáte **plný pytel** z vašeho odpadkového koše, **nový pytel** najdete **pod ním**."
-].join("\n");
-const buildGate = () => [
-  `![](${IMG(P.GATE_SWITCH)})`,
-  "🚪 **Otevírání brány**:",
-  "– **Zevnitř**: tlačítkem v průchodu **hned vedle key-boxu**.",
-  "– **Z ulice**: kód je stejný jako k úschovně."
 ].join("\n");
 const buildDoorbells = () => [
   `![](${IMG(P.DOOR_BELLS)})`,
@@ -319,15 +312,13 @@ function buildStayInstructions() {
     "## Instrukce k ubytování",
     `![](${IMG(P.ENTRANCE)})`,
     `![](${IMG(P.DIALER)})`,
-    "Klíč od apartmánu nechám v bílé schránce na klíče v průchodu do dvora, hned za bránou.",
-    "Pro otevření brány vytočte kód **3142#** na levé stěně (viz obrázek).",
+    "Klíč od apartmánu nechám v **bílé schránce na klíče** v průchodu do dvora (viz fotky vchodu a číselníku).",
+    "Vstup do průchodu: na **levé stěně** vytočte na číselníku kód **3142#** (viz obrázek).",
     `![](${IMG(P.LUGGAGE)})`,
-    "Pokud přijedete před časem check-inu, uložte si prosím zavazadla v úschovně zavazadel vedle schránky na klíče. Kód je stejný jako pro bránu – **3142#**. Po uložení se ujistěte, že jsou dveře zavřené.",
+    "Pokud přijedete před časem check-inu, uložte si prosím zavazadla v **úschovně zavazadel** vedle schránky na klíče. Stejný kód **3142#** platí i pro vstup do průchodu. Po uložení se ujistěte, že jsou dveře zavřené.",
     `![](${IMG(P.KEYBOX_WALL)})`,
     "Hned vedle je schránka na klíče. Vaše číslo boxu a kód vám poslal David. Po převzetí klíčů schránku zavřete.",
-    "Najdete tam jeden klíč a jeden čip. Čip slouží k hlavním dveřím na pravé straně parkoviště a k otevření brány během pobytu pomocí senzoru.",
-    `![](${IMG(P.GATE_SWITCH)})`,
-    "Pro otevření brány zevnitř použijte bílý spínač vedle schránky na klíče. Brána se automaticky zavře přibližně za 2,5 minuty.",
+    "Najdete tam jeden klíč a jeden čip. **Čip** slouží k **hlavním vstupním dveřím** na pravé straně parkoviště.",
     "Klíč je od vašeho apartmánu a patro vám poslal David. Prosím, nepoužívejte schránku na klíče jako úložiště během pobytu – je určena pouze pro příjezdy.",
     "",
     "### Důležité informace",
@@ -445,7 +436,6 @@ function detectIntent(text) {
   if (/(kl[ií]č|klic|key).{0,30}(apartm|pokoj|room)/i.test(t)) return "keys";
 
   if (/popelnic|odpad|trash|bin/i.test(t)) return "trash";
-  if (/(brán|branu|gate|vstup)/i.test(t)) return "gate";
   if (/(zvonk|bell|doorbell)/i.test(t)) return "doorbells";
   if (/(výtah|vytah|elevator).*(telefon|phone|servis|service|porucha)?/i.test(t)) return "elevator_phone";
   if (/(požár|pozar|fire).*(alarm|hlasič|hlasics)/i.test(t)) return "fire_alarm";
@@ -629,7 +619,6 @@ function runConcierge(body) {
           elevator_phone: buildElevatorPhone,
           luggage: buildLuggageInfo,
           keys: () => buildKeyHelp(),
-          gate: buildGate,
           doorbells: buildDoorbells,
           trash: buildTrash,
           laundry: buildLaundry,
@@ -699,7 +688,6 @@ function runConcierge(body) {
     if (intent === "luggage")          return buildLuggageInfo();
     if (intent === "keys")             return buildKeyHelp();
     if (intent === "trash")            return buildTrash();
-    if (intent === "gate")             return buildGate();
     if (intent === "doorbells")        return buildDoorbells();
     if (intent === "elevator_phone")   return buildElevatorPhone();
     if (intent === "fire_alarm")       return buildFireAlarm();

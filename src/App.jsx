@@ -29,6 +29,8 @@ const AppStyles = () => (
       --danger:#dc2626;
       --radius-lg:20px;
       --radius-md:14px;
+      --radius-btn:14px;
+      --radius-btn-soft:12px;
       --shadow:0 4px 6px -1px rgba(15,20,25,.06), 0 12px 24px -4px rgba(15,20,25,.08);
       --shadow-lg:0 20px 40px -12px rgba(15,20,25,.15);
     }
@@ -36,8 +38,10 @@ const AppStyles = () => (
     body{
       margin:0;
       min-height:100%;
+      min-height:100dvh;
       font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
       color:var(--ink);
+      -webkit-tap-highlight-color:transparent;
       background:
         radial-gradient(1000px 520px at 8% -8%, rgba(20,184,166,.14), transparent 55%),
         radial-gradient(900px 480px at 92% 0%, rgba(234,88,12,.10), transparent 50%),
@@ -47,29 +51,41 @@ const AppStyles = () => (
 
     .appHeader{
       position:sticky;top:0;z-index:1500;
-      display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px;
-      padding:12px 18px;
-      background:rgba(255,255,255,.82);
-      backdrop-filter:saturate(140%) blur(12px);
+      padding:calc(10px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 12px max(16px, env(safe-area-inset-left,0px));
+      background:rgba(255,255,255,.88);
+      backdrop-filter:saturate(140%) blur(14px);
       border-bottom:1px solid var(--border);
       box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
     }
-    .appHeader .title{
-      text-align:center;font-weight:800;font-size:1.05rem;letter-spacing:-.02em;
-      background:linear-gradient(120deg,var(--accent),var(--teal));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    .brandMvp{
+      display:flex;align-items:center;justify-content:center;gap:14px;
+      max-width:920px;margin:0 auto;
     }
-    .appHeader img.logo{height:40px;width:auto;object-fit:contain;border-radius:10px}
+    .brandLogo{
+      width:52px;height:52px;object-fit:cover;border-radius:16px;
+      flex-shrink:0;
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+    }
+    .brandText{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;text-align:left}
+    .brandName{
+      font-weight:800;font-size:clamp(1.05rem, 3.8vw, 1.2rem);letter-spacing:-.03em;line-height:1.15;color:var(--ink);
+    }
+    .brandTag{
+      font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+    }
 
     .row{
-      display:flex;flex-direction:column;gap:14px;max-width:920px;margin:16px auto 28px;padding:0 18px;
+      display:flex;flex-direction:column;gap:14px;max-width:920px;margin:12px auto 28px;
+      padding:0 max(16px, env(safe-area-inset-left,0px)) 0 max(16px, env(safe-area-inset-right,0px));
     }
     .scroller{
-      max-height:min(68vh,560px);overflow:auto;padding:14px;border-radius:var(--radius-lg);
+      max-height:min(58dvh,520px);overflow:auto;padding:14px 14px 16px;border-radius:var(--radius-lg);
       background:var(--surface);
       border:1px solid var(--border);
       box-shadow:var(--shadow);
       scroll-behavior:auto;
+      -webkit-overflow-scrolling:touch;
     }
 
     .bubble{
@@ -106,38 +122,64 @@ const AppStyles = () => (
     }
     .bot a:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.32)}
 
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;width:100%}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;width:100%}
     .chipPrimary{
       --btn:var(--accent);
-      padding:13px 16px;border-radius:999px;
+      appearance:none;
+      padding:14px 18px;border-radius:var(--radius-btn);
+      min-height:48px;
       border:1px solid color-mix(in oklab,var(--btn),black 14%);
-      background:linear-gradient(165deg,color-mix(in oklab,var(--btn),white 8%),var(--btn));
-      color:#fff;font-weight:700;font-size:.92rem;letter-spacing:.01em;
-      box-shadow:0 6px 18px color-mix(in oklab,var(--btn),transparent 72%);
-      cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;text-align:center;
+      border-bottom-width:3px;
+      background:linear-gradient(165deg,color-mix(in oklab,var(--btn),white 10%),var(--btn));
+      color:#fff;font-weight:700;font-size:.93rem;letter-spacing:.01em;
+      box-shadow:0 4px 0 color-mix(in oklab,var(--btn),black 22%), 0 8px 20px color-mix(in oklab,var(--btn),transparent 70%);
+      cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,filter .12s ease,border-bottom-width .12s ease;text-align:center;
+      touch-action:manipulation;
     }
-    .chipPrimary:hover{transform:translateY(-2px);box-shadow:0 10px 26px color-mix(in oklab,var(--btn),transparent 65%)}
-    .chipPrimary:active{transform:translateY(0);filter:brightness(.97)}
-    .chipPrimary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+    .chipPrimary:hover{transform:translateY(-1px)}
+    .chipPrimary:active{transform:translateY(2px);border-bottom-width:1px;box-shadow:0 2px 10px color-mix(in oklab,var(--btn),transparent 75%)}
+    .chipPrimary:disabled{opacity:.55;cursor:not-allowed;transform:none;border-bottom-width:3px}
 
     .chip{
       --btn:var(--surface-2);
-      padding:13px 16px;border-radius:999px;
+      appearance:none;
+      padding:14px 16px 14px 14px;border-radius:var(--radius-btn-soft);
+      min-height:48px;
       border:1px solid var(--border);
+      border-left:4px solid color-mix(in oklab,var(--accent),transparent 45%);
       background:linear-gradient(180deg,#fff,var(--surface-2));
-      color:var(--ink-soft);font-weight:700;font-size:.9rem;
-      box-shadow:0 2px 6px rgba(15,20,25,.04);
-      cursor:pointer;text-align:center;transition:transform .15s ease,border-color .15s ease;
+      color:var(--ink-soft);font-weight:700;font-size:.91rem;
+      box-shadow:0 2px 0 rgba(15,20,25,.06), 0 4px 12px rgba(15,20,25,.05);
+      cursor:pointer;text-align:center;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;
+      touch-action:manipulation;
     }
-    .chip:hover{transform:translateY(-1px);border-color:rgba(13,148,136,.35)}
+    .chip:hover{transform:translateY(-2px);border-left-color:var(--accent);box-shadow:0 3px 0 rgba(15,20,25,.06), 0 8px 18px rgba(15,20,25,.07)}
+    .chip:active{transform:translateY(0)}
 
     .backBtn{
-      padding:10px 14px;border-radius:12px;border:1px solid var(--border);
+      appearance:none;
+      padding:12px 16px;min-height:44px;border-radius:var(--radius-btn-soft);border:1px solid var(--border);
       background:var(--surface);color:var(--ink-soft);font-weight:600;font-size:.88rem;
       cursor:pointer;box-shadow:0 2px 6px rgba(15,20,25,.04);
       transition:background .15s ease,border-color .15s ease;
+      touch-action:manipulation;
     }
     .backBtn:hover{background:var(--surface-2);border-color:rgba(13,148,136,.25)}
+
+    .typingBubble{min-height:48px;display:flex;align-items:center}
+    .typingDots{display:inline-flex;gap:7px;align-items:center;padding:2px 4px}
+    .typingDots span{
+      width:8px;height:8px;border-radius:50%;
+      background:var(--accent);
+      opacity:.4;
+      animation:typingBounce 1.15s ease-in-out infinite;
+    }
+    .typingDots span:nth-child(2){animation-delay:.18s}
+    .typingDots span:nth-child(3){animation-delay:.36s}
+    @keyframes typingBounce{
+      0%,80%,100%{transform:translateY(0);opacity:.4}
+      40%{transform:translateY(-6px);opacity:1}
+    }
 
     .tips{color:var(--muted);font-size:13px;line-height:1.4;margin-top:6px}
 
@@ -152,7 +194,7 @@ const AppStyles = () => (
     .searchWrap{position:relative}
     .searchInputRow{
       display:flex;align-items:center;gap:10px;
-      padding:4px 4px 4px 14px;border-radius:999px;
+      padding:4px 4px 4px 14px;border-radius:var(--radius-btn);
       border:1px solid var(--border);background:var(--surface-2);
       transition:border-color .2s ease, box-shadow .2s ease;
     }
@@ -212,7 +254,7 @@ const AppStyles = () => (
 
     .pillRow{display:flex;gap:8px;flex-wrap:wrap}
     .pill{
-      padding:10px 14px;border-radius:999px;border:1px solid var(--border);
+      padding:11px 14px;min-height:44px;border-radius:12px;border:1px solid var(--border);
       background:var(--surface);color:var(--accent);cursor:pointer;font-weight:700;font-size:.88rem;
       transition:background .15s ease,border-color .15s ease;
     }
@@ -223,30 +265,45 @@ const AppStyles = () => (
     }
 
     .fabStack{
-      position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:1100;
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:max(16px, env(safe-area-inset-bottom,0px));z-index:1100;
       display:flex;flex-direction:column;gap:10px;
+      padding:0 max(12px, env(safe-area-inset-left,0px)) 0 max(12px, env(safe-area-inset-right,0px));
+      width:min(calc(100vw - 24px), 400px);
     }
     .fabAction{
-      border:none;border-radius:999px;padding:14px 22px;font-weight:700;font-size:.95rem;
+      appearance:none;border:none;border-radius:var(--radius-btn);padding:15px 22px;min-height:52px;font-weight:700;font-size:.95rem;
       background:linear-gradient(165deg,var(--accent),var(--accent-2));
-      color:#fff;box-shadow:0 12px 28px rgba(13,148,136,.35);cursor:pointer;min-width:240px;text-align:center;
+      color:#fff;
+      box-shadow:0 4px 0 color-mix(in oklab,var(--accent-2),black 15%), 0 14px 32px rgba(13,148,136,.32);
+      cursor:pointer;width:100%;text-align:center;touch-action:manipulation;
     }
+    .fabAction:active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in oklab,var(--accent-2),black 15%), 0 6px 20px rgba(13,148,136,.25)}
 
     .fab{
-      position:fixed;right:18px;bottom:96px;z-index:1000;border:none;border-radius:999px;
-      padding:12px 16px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
-      box-shadow:0 10px 28px rgba(220,38,38,.35);
+      position:fixed;right:max(14px, env(safe-area-inset-right,0px));
+      bottom:calc(100px + env(safe-area-inset-bottom, 0px));z-index:1000;
+      appearance:none;border:none;border-radius:var(--radius-btn);
+      padding:13px 18px;min-height:48px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
+      box-shadow:0 4px 0 color-mix(in oklab,var(--danger),black 18%), 0 12px 28px rgba(220,38,38,.32);
       background:linear-gradient(165deg,#ef4444,#dc2626);
       border:1px solid color-mix(in oklab,var(--danger),black 8%);
+      touch-action:manipulation;
     }
+    .fab:active{transform:translateY(2px)}
 
     .langCard{max-width:420px;margin:0 auto}
     .langSingle{display:flex;justify-content:center;margin-top:12px}
     .langGrid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 
+    @media (max-width:640px){
+      .grid{grid-template-columns:1fr}
+      .scroller{max-height:min(42dvh,380px)}
+    }
     @media (max-width:480px){
-      .row{padding-bottom:88px}
-      .appHeader{padding:10px 14px}
+      .row{padding-bottom:max(88px, calc(72px + env(safe-area-inset-bottom,0px)))}
+      .brandMvp{gap:12px}
+      .brandLogo{width:48px;height:48px;border-radius:14px}
     }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -280,7 +337,7 @@ const tr = {
        spareKeyLabel:"🔑 Náhradní klíč",
        laundryLabel:"🧺 Prádelna", accessLabel:"♿️ Bezbariérovost", smokingLabel:"🚭 Kouření",
        luggageLabel:"🎒 Úschovna zavazadel", doorbellsLabel:"🔔 Zvonky",
-       gateLabel:"🚪 Brána (zevnitř)", trashLabel:"🗑️ Odpadky / Popelnice",
+       trashLabel:"🗑️ Odpadky / Popelnice",
        doctorLabel:"👩‍⚕️ Lékař 24/7", linenLabel:"🧻 Povlečení / Ručníky",
        pickRoom:"Zvolte číslo apartmánu", floor:"Patro", room:"Pokoj", confirm:"Zobrazit", cancel:"Zavřít",
        wifiStatus:"Funguje Wi-Fi?", ok:"Funguje", notOk:"Nefunguje",
@@ -306,7 +363,7 @@ const tr = {
        spareKeyLabel:"🔑 Spare key",
        laundryLabel:"🧺 Laundry", accessLabel:"♿️ Accessibility", smokingLabel:"🚭 Smoking",
        luggageLabel:"🎒 Luggage room", doorbellsLabel:"🔔 Doorbells",
-       gateLabel:"🚪 Gate (inside)", trashLabel:"🗑️ Trash / bins",
+       trashLabel:"🗑️ Trash / bins",
        doctorLabel:"👩‍⚕️ Doctor 24/7", linenLabel:"🧻 Linen / towels",
        pickRoom:"Choose your apartment number", floor:"Floor", room:"Room", confirm:"Show", cancel:"Close",
        wifiStatus:"Is the Wi-Fi working?", ok:"Works", notOk:"Doesn’t work",
@@ -333,7 +390,7 @@ const tr = {
        spareKeyLabel:"🔑 Llave de repuesto",
        laundryLabel:"🧺 Lavandería", accessLabel:"♿️ Accesibilidad", smokingLabel:"🚭 Fumar",
        luggageLabel:"🎒 Consigna de equipaje", doorbellsLabel:"🔔 Timbres",
-       gateLabel:"🚪 Puerta (interior)", trashLabel:"🗑️ Basura / contenedores",
+       trashLabel:"🗑️ Basura / contenedores",
        doctorLabel:"👩‍⚕️ Médico 24/7", linenLabel:"🧻 Ropa de cama / Toallas",
        pickRoom:"Elige el número de apartamento", floor:"Planta", room:"Habitación", confirm:"Mostrar", cancel:"Cerrar",
        wifiStatus:"¿Funciona el Wi-Fi?", ok:"Funciona", notOk:"No funciona",
@@ -359,7 +416,7 @@ const tr = {
        spareKeyLabel:"🔑 Ersatzschlüssel",
        laundryLabel:"🧺 Wäscherei", accessLabel:"♿️ Barrierefreiheit", smokingLabel:"🚭 Rauchen",
        luggageLabel:"🎒 Gepäckaufbewahrung", doorbellsLabel:"🔔 Klingeln",
-       gateLabel:"🚪 Tor (innen)", trashLabel:"🗑️ Müll / Tonnen",
+       trashLabel:"🗑️ Müll / Tonnen",
        doctorLabel:"👩‍⚕️ Arzt 24/7", linenLabel:"🧻 Bettwäsche / Handtücher",
        pickRoom:"Apartmentnummer auswählen", floor:"Stockwerk", room:"Zimmer", confirm:"Anzeigen", cancel:"Schließen",
        wifiStatus:"Funktioniert das Wi-Fi?", ok:"Funktioniert", notOk:"Funktioniert nicht",
@@ -385,7 +442,7 @@ const tr = {
        spareKeyLabel:"🔑 Clé de secours",
        laundryLabel:"🧺 Laverie", accessLabel:"♿️ Accessibilité", smokingLabel:"🚭 Fumer",
        luggageLabel:"🎒 Consigne à bagages", doorbellsLabel:"🔔 Sonnette",
-       gateLabel:"🚪 Portail (intérieur)", trashLabel:"🗑️ Poubelles / déchets",
+       trashLabel:"🗑️ Poubelles / déchets",
        doctorLabel:"👩‍⚕️ Médecin 24/7", linenLabel:"🧻 Linge / Serviettes",
        pickRoom:"Choisissez votre numéro d’appartement", floor:"Étage", room:"Pièce", confirm:"Afficher", cancel:"Fermer",
        wifiStatus:"Le Wi-Fi fonctionne ?", ok:"Fonctionne", notOk:"Ne fonctionne pas",
@@ -411,7 +468,7 @@ const tr = {
        spareKeyLabel:"🔑 Запасной ключ",
        laundryLabel:"🧺 Прачечная", accessLabel:"♿️ Безбарьерность", smokingLabel:"🚭 Курение",
        luggageLabel:"🎒 Камера хранения", doorbellsLabel:"🔔 Домофоны",
-       gateLabel:"🚪 Ворота (изнутри)", trashLabel:"🗑️ Мусор / контейнеры",
+       trashLabel:"🗑️ Мусор / контейнеры",
        doctorLabel:"👩‍⚕️ Врач 24/7", linenLabel:"🧻 Постель / Полотенца",
        pickRoom:"Выберите номер апартамента", floor:"Этаж", room:"Комната", confirm:"Показать", cancel:"Закрыть",
        wifiStatus:"Работает ли Wi-Fi?", ok:"Работает", notOk:"Не работает",
@@ -437,7 +494,7 @@ const tr = {
        spareKeyLabel:"🔑 Запасний ключ",
        laundryLabel:"🧺 Пральня", accessLabel:"♿️ Безбар’єрність", smokingLabel:"🚭 Паління",
        luggageLabel:"🎒 Камера зберігання", doorbellsLabel:"🔔 Дзвінки",
-       gateLabel:"🚪 Ворота (зсередини)", trashLabel:"🗑️ Сміття / контейнери",
+       trashLabel:"🗑️ Сміття / контейнери",
        doctorLabel:"👩‍⚕️ Лікар 24/7", linenLabel:"🧻 Постіль / Рушники",
        pickRoom:"Оберіть номер апартаменту", floor:"Поверх", room:"Кімната", confirm:"Показати", cancel:"Закрити",
        wifiStatus:"Працює Wi-Fi?", ok:"Працює", notOk:"Не працює",
@@ -463,7 +520,7 @@ const tr = {
        spareKeyLabel:"🔑 Reservésleutel",
        laundryLabel:"🧺 Wasserij", accessLabel:"♿️ Toegankelijkheid", smokingLabel:"🚭 Roken",
        luggageLabel:"🎒 Bagageopslag", doorbellsLabel:"🔔 Deurbellen",
-       gateLabel:"🚪 Poort (binnenzijde)", trashLabel:"🗑️ Afval / containers",
+       trashLabel:"🗑️ Afval / containers",
        doctorLabel:"👩‍⚕️ Arts 24/7", linenLabel:"🧻 Beddengoed / Handdoeken",
        pickRoom:"Kies je appartementnummer", floor:"Verdieping", room:"Kamer", confirm:"Weergeven", cancel:"Sluiten",
        wifiStatus:"Werkt de Wi-Fi?", ok:"Werkt", notOk:"Werkt niet",
@@ -489,7 +546,7 @@ const tr = {
        spareKeyLabel:"🔑 Chiave di riserva",
        laundryLabel:"🧺 Lavanderia", accessLabel:"♿️ Accessibilità", smokingLabel:"🚭 Fumo",
        luggageLabel:"🎒 Deposito bagagli", doorbellsLabel:"🔔 Campanelli",
-       gateLabel:"🚪 Cancello (interno)", trashLabel:"🗑️ Rifiuti / bidoni",
+       trashLabel:"🗑️ Rifiuti / bidoni",
        doctorLabel:"👩‍⚕️ Medico 24/7", linenLabel:"🧻 Lenzuola / Asciugamani",
        pickRoom:"Scegli il numero dell’appartamento", floor:"Piano", room:"Camera", confirm:"Mostra", cancel:"Chiudi",
        wifiStatus:"Il Wi-Fi funziona?", ok:"Funziona", notOk:"Non funziona",
@@ -515,7 +572,7 @@ const tr = {
        spareKeyLabel:"🔑 Ekstra nøgle",
        laundryLabel:"🧺 Vaskeri", accessLabel:"♿️ Tilgængelighed", smokingLabel:"🚭 Rygning",
        luggageLabel:"🎒 Bagageopbevaring", doorbellsLabel:"🔔 Dørklokker",
-       gateLabel:"🚪 Port (indvendig)", trashLabel:"🗑️ Affald / beholdere",
+       trashLabel:"🗑️ Affald / beholdere",
        doctorLabel:"👩‍⚕️ Læge 24/7", linenLabel:"🧻 Sengetøj / Håndklæder",
        pickRoom:"Vælg dit lejlighedsnummer", floor:"Etage", room:"Værelse", confirm:"Vis", cancel:"Luk",
        wifiStatus:"Virker Wi-Fi'en?", ok:"Virker", notOk:"Virker ikke",
@@ -541,7 +598,7 @@ const tr = {
        spareKeyLabel:"🔑 Zapasowy klucz",
        laundryLabel:"🧺 Pralnia", accessLabel:"♿️ Dostępność", smokingLabel:"🚭 Palenie",
        luggageLabel:"🎒 Przechowalnia bagażu", doorbellsLabel:"🔔 Dzwonki",
-       gateLabel:"🚪 Brama (od środka)", trashLabel:"🗑️ Śmieci / kosze",
+       trashLabel:"🗑️ Śmieci / kosze",
        doctorLabel:"👩‍⚕️ Lekarz 24/7", linenLabel:"🧻 Pościel / Ręczniki",
        pickRoom:"Wybierz numer apartamentu", floor:"Piętro", room:"Pokój", confirm:"Pokaż", cancel:"Zamknij",
        wifiStatus:"Czy Wi-Fi działa?", ok:"Działa", notOk:"Nie działa",
@@ -638,57 +695,68 @@ const replyI18n = {
     replyNetwork:
       "Nelze se připojit k serveru. Při „npm run dev“ musí současně běžet „npx netlify dev“ (proxy předává /.netlify/functions na port 8888).",
     replyNoHtml: "Obsah odpovědi se nepodařilo bezpečně zobrazit — text níže:",
+    loadingReply: "Načítám odpověď…",
   },
   en: {
     replyEmpty: "The server returned an empty reply. Please try again.",
     replyNetwork:
       "Cannot reach the server. For “npm run dev”, also run “npx netlify dev” (functions are proxied to port 8888).",
     replyNoHtml: "Could not render the reply safely — plain text below:",
+    loadingReply: "Loading reply…",
   },
   es: {
     replyEmpty: "El servidor devolvió una respuesta vacía. Inténtalo de nuevo.",
     replyNetwork: "No hay conexión con el servidor. Para desarrollo local, ejecuta también “npx netlify dev”.",
     replyNoHtml: "No se pudo mostrar el contenido; texto a continuación:",
+    loadingReply: "Cargando respuesta…",
   },
   de: {
     replyEmpty: "Der Server hat eine leere Antwort gesendet. Bitte erneut versuchen.",
     replyNetwork: "Server nicht erreichbar. Für lokale Entwicklung bitte auch “npx netlify dev” starten.",
     replyNoHtml: "Inhalt konnte nicht sicher dargestellt werden — Text unten:",
+    loadingReply: "Antwort wird geladen…",
   },
   fr: {
     replyEmpty: "Le serveur a renvoyé une réponse vide. Réessayez.",
     replyNetwork: "Impossible de joindre le serveur. En local, lancez aussi “npx netlify dev”.",
     replyNoHtml: "Impossible d’afficher le contenu — texte ci-dessous :",
+    loadingReply: "Chargement de la réponse…",
   },
   ru: {
     replyEmpty: "Сервер вернул пустой ответ. Попробуйте снова.",
     replyNetwork: "Нет соединения с сервером. Для разработки запустите также «npx netlify dev».",
     replyNoHtml: "Не удалось безопасно отобразить ответ — текст ниже:",
+    loadingReply: "Загрузка ответа…",
   },
   uk: {
     replyEmpty: "Сервер повернув порожню відповідь. Спробуйте ще раз.",
     replyNetwork: "Немає зв’язку з сервером. Для розробки також запустіть «npx netlify dev».",
     replyNoHtml: "Не вдалося безпечно показати відповідь — текст нижче:",
+    loadingReply: "Завантаження відповіді…",
   },
   nl: {
     replyEmpty: "De server gaf een leeg antwoord. Probeer opnieuw.",
     replyNetwork: "Geen verbinding met de server. Start voor lokaal ook “npx netlify dev”.",
     replyNoHtml: "Kon de inhoud niet veilig tonen — platte tekst hieronder:",
+    loadingReply: "Antwoord laden…",
   },
   it: {
     replyEmpty: "Il server ha restituito una risposta vuota. Riprova.",
     replyNetwork: "Impossibile contattare il server. In locale avvia anche “npx netlify dev”.",
     replyNoHtml: "Impossibile mostrare il contenuto in modo sicuro — testo sotto:",
+    loadingReply: "Caricamento risposta…",
   },
   da: {
     replyEmpty: "Serveren returnerede et tomt svar. Prøv igen.",
     replyNetwork: "Kan ikke få kontakt til serveren. Kør også “npx netlify dev” lokalt.",
     replyNoHtml: "Indholdet kunne ikke vises sikkert — tekst nedenfor:",
+    loadingReply: "Henter svar…",
   },
   pl: {
     replyEmpty: "Serwer zwrócił pustą odpowiedź. Spróbuj ponownie.",
     replyNetwork: "Brak połączenia z serwerem. Lokalnie uruchom też „npx netlify dev”.",
     replyNoHtml: "Nie udało się bezpiecznie wyświetlić treści — tekst poniżej:",
+    loadingReply: "Ładowanie odpowiedzi…",
   },
 };
 
@@ -822,7 +890,7 @@ export default function App(){
     } else {
       scroller.scrollTo({ top: scroller.scrollHeight, behavior: "auto" });
     }
-  }, [chat]);
+  }, [chat, loading]);
 
   // Po výběru jazyka / otevření menu skoč na vyhledávání a témata
   useEffect(() => {
@@ -886,7 +954,6 @@ export default function App(){
       { label: t(activeLang,"smokingLabel"),     control:{ intent:"tech", sub:"smoking" } },
       { label: t(activeLang,"luggageLabel"),     control:{ intent:"tech", sub:"luggage" } },
       { label: t(activeLang,"doorbellsLabel"),   control:{ intent:"tech", sub:"doorbells" } },
-      { label: t(activeLang,"gateLabel"),        control:{ intent:"tech", sub:"gate" } },
       { label: t(activeLang,"trashLabel"),       control:{ intent:"tech", sub:"trash" } },
       { label: t(activeLang,"doctorLabel"),      control:{ intent:"tech", sub:"doctor" } },
       { label: t(activeLang,"linenLabel"),       control:{ intent:"tech", sub:"linen_towels" } },
@@ -989,10 +1056,19 @@ export default function App(){
   }
 
   async function callBackend(payload){
+    const MAX_MESSAGES = 28;
+    const bodyPayload =
+      Array.isArray(payload?.messages) && payload.messages.length > MAX_MESSAGES
+        ? { ...payload, messages: payload.messages.slice(-MAX_MESSAGES) }
+        : payload;
+
     setLoading(true);
     try{
       const r = await fetch("/.netlify/functions/concierge", {
-        method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload)
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(bodyPayload),
+        keepalive: true,
       });
       const rawText = await r.text();
       let reply = extractReplyFromResponseBody(rawText, r.ok);
@@ -1167,9 +1243,21 @@ export default function App(){
 
       {/* Header */}
       <header className="appHeader">
-        <img className="logo" src="/help/chill1.jpg" alt="Chill Apartments" />
-        <div className="title">Chill concierge</div>
-        <img className="logo" src="/help/chill1.jpg" alt="Chill Apartments" />
+        <div className="brandMvp">
+          <img
+            className="brandLogo"
+            src="/help/chill1.jpg"
+            alt=""
+            width={52}
+            height={52}
+            decoding="async"
+            fetchPriority="high"
+          />
+          <div className="brandText">
+            <span className="brandName">Chill Apartments</span>
+            <span className="brandTag">Concierge</span>
+          </div>
+        </div>
       </header>
 
       <div className="row">
@@ -1181,6 +1269,15 @@ export default function App(){
             m.role === "assistant"
               ? <div key={i}>{renderAssistant(m.content)}</div>
               : <div key={i} className="bubble me">{m.content}</div>
+          )}
+          {loading && (
+            <div className="bubble bot typingBubble" aria-busy="true" aria-label={t(lang ?? "en", "loadingReply")}>
+              <span className="typingDots" aria-hidden>
+                <span />
+                <span />
+                <span />
+              </span>
+            </div>
           )}
         </div>
 
