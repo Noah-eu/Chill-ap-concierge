@@ -38,13 +38,14 @@ const AppStyles = () => (
       --shadow:0 4px 6px -1px rgba(15,20,25,.06), 0 12px 24px -4px rgba(15,20,25,.08);
       --shadow-lg:0 20px 40px -12px rgba(15,20,25,.15);
       --whatsapp-dock:70px;
+      --font-app:"Comfortaa","Quicksand",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     }
 
     body{
       margin:0;
       height:100%;
       overflow:hidden;
-      font-family:"Comfortaa","Quicksand",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      font-family:var(--font-app);
       color:var(--ink);
       -webkit-tap-highlight-color:transparent;
       background:
@@ -52,6 +53,11 @@ const AppStyles = () => (
         radial-gradient(90% 70% at 100% 10%, rgba(20,184,166,.08), transparent 48%),
         linear-gradient(168deg, #f8fafb 0%, #eef2f1 42%, #ecf4f3 100%);
       background-attachment:fixed;
+    }
+
+    #root{font-family:var(--font-app)}
+    button,input,textarea,select,optgroup{
+      font-family:var(--font-app);
     }
 
     .appShell{
@@ -97,6 +103,7 @@ const AppStyles = () => (
       flex:1 1 200px;
       display:inline-flex;align-items:center;justify-content:center;gap:8px;
       min-height:46px;padding:12px 18px;border-radius:14px;
+      font-family:var(--font-app);
       font-weight:800;font-size:.92rem;letter-spacing:.02em;
       text-decoration:none;color:#fff;text-align:center;
       background:linear-gradient(165deg,#a855f7,#7c3aed);
@@ -109,7 +116,8 @@ const AppStyles = () => (
       flex:0 1 160px;
       appearance:none;
       min-height:46px;padding:12px 16px;border-radius:14px;
-      font-weight:700;font-size:.86rem;font-family:inherit;
+      font-family:var(--font-app);
+      font-weight:700;font-size:.86rem;
       color:var(--accent-2);
       background:var(--surface-2);
       border:1px solid var(--border);
@@ -179,7 +187,7 @@ const AppStyles = () => (
       display:inline-block;padding:10px 16px;border-radius:999px;margin:4px 4px 0 0;
       border:1px solid color-mix(in oklab, var(--accent), black 12%);
       background:linear-gradient(180deg, var(--accent), var(--accent-2));
-      color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;
+      color:#fff;text-decoration:none;font-family:var(--font-app);font-weight:700;font-size:.9rem;
       box-shadow:0 6px 16px rgba(13,148,136,.28);
       transition:transform .15s ease, box-shadow .15s ease;
     }
@@ -188,6 +196,7 @@ const AppStyles = () => (
     .chipPrimary{
       --btn:var(--accent);
       appearance:none;
+      font-family:var(--font-app);
       padding:14px 18px;border-radius:var(--radius-btn);
       min-height:48px;
       border:1px solid color-mix(in oklab,var(--btn),black 14%);
@@ -205,6 +214,7 @@ const AppStyles = () => (
     .chip{
       --btn:var(--surface-2);
       appearance:none;
+      font-family:var(--font-app);
       padding:14px 16px 14px 14px;border-radius:var(--radius-btn-soft);
       min-height:48px;
       border:1px solid var(--border);
@@ -264,6 +274,7 @@ const AppStyles = () => (
     .menuGrid .chipPrimary:disabled{transform:none;filter:none;opacity:.5}
     .backBtn{
       appearance:none;
+      font-family:var(--font-app);
       padding:10px 14px;min-height:42px;border-radius:12px;
       font-weight:700;font-size:.82rem;
       cursor:pointer;
@@ -389,7 +400,7 @@ const AppStyles = () => (
       border:1px solid color-mix(in oklab,#128C7E,black 8%);
       background:linear-gradient(165deg,#25D366,#128C7E);
       color:#fff;
-      font-family:inherit;
+      font-family:var(--font-app);
       font-weight:800;
       font-size:.95rem;
       letter-spacing:.02em;
@@ -426,6 +437,7 @@ const AppStyles = () => (
 
     .pillRow{display:flex;gap:8px;flex-wrap:wrap}
     .pill{
+      font-family:var(--font-app);
       padding:11px 14px;min-height:44px;border-radius:12px;border:1px solid var(--border);
       background:var(--surface);color:var(--accent);cursor:pointer;font-weight:700;font-size:.88rem;
       transition:background .15s ease,border-color .15s ease;
@@ -444,7 +456,8 @@ const AppStyles = () => (
       width:min(calc(100vw - 24px), 400px);
     }
     .fabAction{
-      appearance:none;border:none;border-radius:var(--radius-btn);padding:15px 22px;min-height:52px;font-weight:700;font-size:.95rem;
+      appearance:none;border:none;border-radius:var(--radius-btn);padding:15px 22px;min-height:52px;
+      font-family:var(--font-app);font-weight:700;font-size:.95rem;
       background:linear-gradient(165deg,var(--accent),var(--accent-2));
       color:#fff;
       box-shadow:0 4px 0 color-mix(in oklab,var(--accent-2),black 15%), 0 14px 32px rgba(13,148,136,.32);
@@ -456,6 +469,7 @@ const AppStyles = () => (
       position:fixed;right:max(14px, env(safe-area-inset-right,0px));
       bottom:calc(var(--whatsapp-dock) + 100px + env(safe-area-inset-bottom, 0px));z-index:1140;
       appearance:none;border:none;border-radius:var(--radius-btn);
+      font-family:var(--font-app);
       padding:13px 18px;min-height:48px;font-weight:700;font-size:.88rem;cursor:pointer;color:#fff;
       box-shadow:0 4px 0 color-mix(in oklab,var(--danger),black 18%), 0 12px 28px rgba(220,38,38,.32);
       background:linear-gradient(165deg,#ef4444,#dc2626);
