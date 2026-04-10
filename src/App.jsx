@@ -9,6 +9,9 @@ import DOMPurify from "dompurify";
 const MATTERPORT_URL =
   "https://my.matterport.com/show/?m=PTEAUeUbMno&ss=53&sr=-1.6%2C1.05&tag=8hiaV2GWWhB&pin-pos=20.12%2C-3.85%2C8.94";
 
+const BOOKING_URL_CS = "https://www.chillapartments.cz/rezervace-online/";
+const BOOKING_URL_INTL = "https://www.chillapartments.cz/en/rezervace-online/";
+
 /** ================== UI (inline CSS) ================== */
 const AppStyles = () => (
   <style>{`
@@ -67,23 +70,54 @@ const AppStyles = () => (
       border-bottom:1px solid var(--border);
       box-shadow:0 1px 0 rgba(255,255,255,.6) inset;
     }
+    .appHeaderInner{max-width:920px;margin:0 auto;width:100%}
     .brandMvp{
-      display:flex;align-items:center;justify-content:center;gap:14px;
+      display:flex;align-items:center;justify-content:center;gap:16px;
       max-width:920px;margin:0 auto;
     }
     .brandLogo{
-      width:52px;height:52px;object-fit:cover;border-radius:16px;
+      width:58px;height:58px;object-fit:cover;border-radius:17px;
       flex-shrink:0;
       border:1px solid var(--border);
       box-shadow:var(--shadow);
     }
-    .brandText{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;text-align:left}
+    .brandText{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;text-align:left}
     .brandName{
-      font-weight:800;font-size:clamp(1.05rem, 3.8vw, 1.2rem);letter-spacing:-.03em;line-height:1.15;color:var(--ink);
+      font-weight:800;font-size:clamp(1.12rem, 4vw, 1.3rem);letter-spacing:-.03em;line-height:1.15;color:var(--ink);
     }
     .brandTag{
-      font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+      font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
     }
+
+    .headerCtaRow{
+      display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:stretch;
+      margin-top:12px;padding-top:12px;border-top:1px solid var(--border);
+    }
+    .headerBookBtn{
+      flex:1 1 200px;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      min-height:46px;padding:12px 18px;border-radius:14px;
+      font-weight:800;font-size:.92rem;letter-spacing:.02em;
+      text-decoration:none;color:#fff;text-align:center;
+      background:linear-gradient(165deg,#a855f7,#7c3aed);
+      border:1px solid color-mix(in oklab,#6d28d9,black 12%);
+      box-shadow:0 3px 0 color-mix(in oklab,#5b21b6,black 8%), 0 10px 28px rgba(124,58,237,.32);
+      touch-action:manipulation;
+    }
+    .headerBookBtn:active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in oklab,#5b21b6,black 8%), 0 6px 18px rgba(124,58,237,.22)}
+    .headerInstallBtn{
+      flex:0 1 160px;
+      appearance:none;
+      min-height:46px;padding:12px 16px;border-radius:14px;
+      font-weight:700;font-size:.86rem;font-family:inherit;
+      color:var(--accent-2);
+      background:var(--surface-2);
+      border:1px solid var(--border);
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    .headerInstallBtn:active{filter:brightness(.97);transform:translateY(1px)}
+    .headerCtaRow--solo .headerBookBtn{flex:1 1 100%}
 
     .row{
       flex:1;
@@ -445,8 +479,9 @@ const AppStyles = () => (
     @media (max-width:480px){
       .row:not(.rowLangOnly){padding-bottom:calc(112px + var(--whatsapp-dock) + env(safe-area-inset-bottom,0px))}
       .brandMvp{gap:12px}
-      .brandLogo{width:48px;height:48px;border-radius:14px}
+      .brandLogo{width:52px;height:52px;border-radius:15px}
       .appHeader{padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:10px}
+      .headerInstallBtn{flex:1 1 140px}
     }
     @media (prefers-reduced-motion:reduce){
       *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
@@ -509,6 +544,40 @@ const whatsappI18n = {
     prefill: "Dzień dobry, jestem gościem Chill Apartments i potrzebuję pomocy w: ",
   },
 };
+
+/** Hlavička: rezervace + instalace PWA (mimo obrazovky jazyka) */
+const TOP_BAR_I18N = {
+  cs: {
+    bookApart: "Rezervovat apartmán",
+    installApp: "Instalovat aplikaci",
+    addToHome: "Přidat na plochu",
+    installHelpTitle: "Aplikace na mobilu",
+    installHelpIos:
+      "Na iPhonu nebo iPadu klepněte na tlačítko Sdílet (↑) a zvolte „Přidat na plochu“.",
+    installHelpAndroid:
+      "V Chrome nebo Edge otevřete menu (⋮) a zvolte „Nainstalovat aplikaci“ nebo „Přidat na plochu“.",
+    installHelpDesktop:
+      "Na počítači hledejte v adresním řádku ikonu instalace nebo položku „Nainstalovat aplikaci“ v menu prohlížeče.",
+    close: "Zavřít",
+  },
+  en: {
+    bookApart: "Book your stay",
+    installApp: "Install app",
+    addToHome: "Add to Home Screen",
+    installHelpTitle: "App on your phone",
+    installHelpIos:
+      'On iPhone or iPad, tap Share (↑) and choose "Add to Home Screen".',
+    installHelpAndroid:
+      'In Chrome or Edge, open the menu (⋮) and choose "Install app" or "Add to Home screen".',
+    installHelpDesktop:
+      'On desktop, look for the install icon in the address bar or "Install app" in the browser menu.',
+    close: "Close",
+  },
+};
+
+function topBarCopy(code) {
+  return TOP_BAR_I18N[code] ?? TOP_BAR_I18N.en;
+}
 
 const tr = {
   cs:{ chooseLang:"Zvolte jazyk", mainTitle:"Vyberte téma", subTitle:"Podtéma / Subtopic", back:"← Zpět",
@@ -1058,6 +1127,8 @@ export default function App(){
   const [shortcutsOpen, setShortcutsOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
+  const [deferredInstall, setDeferredInstall] = useState(null);
+  const [installHelpOpen, setInstallHelpOpen] = useState(false);
 
   // Overlays
   const [roomSheet, setRoomSheet] = useState({ open:false, floor:null, last:null }); // keys (interní)
@@ -1119,6 +1190,55 @@ export default function App(){
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+
+  useEffect(() => {
+    const onBip = (e) => {
+      e.preventDefault();
+      setDeferredInstall(e);
+    };
+    const onInstalled = () => setDeferredInstall(null);
+    window.addEventListener("beforeinstallprompt", onBip);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBip);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  const isStandalone = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return (
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true
+      );
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const isIOS = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent || "";
+    if (/iPad|iPhone|iPod/i.test(ua)) return true;
+    return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  }, []);
+
+  async function handleDeferredInstall() {
+    const ev = deferredInstall;
+    if (!ev) {
+      setInstallHelpOpen(true);
+      return;
+    }
+    try {
+      ev.prompt();
+      await ev.userChoice;
+    } catch {
+      /* ignore */
+    } finally {
+      setDeferredInstall(null);
+    }
+  }
 
   /** ====== FLOWS ====== */
   function makeFlows(activeLang){
@@ -1332,6 +1452,8 @@ export default function App(){
 
   const waUi = whatsappI18n[lang ?? "cs"] ?? whatsappI18n.en;
   const whatsappHref = `https://wa.me/${WHATSAPP_E164}?text=${encodeURIComponent(waUi.prefill)}`;
+  const bookingHref = lang === "cs" ? BOOKING_URL_CS : BOOKING_URL_INTL;
+  const headerTb = lang ? topBarCopy(lang) : null;
 
   const ALL_SSIDS = ["D384","CDEA","CF2A","93EO","D93A","D9E4","6A04","9B7A","1CF8","D8C4","CD9E","CF20","23F0","B4B4","DA4E","D5F6"];
 
@@ -1461,20 +1583,60 @@ export default function App(){
       <div className="appShell">
       {/* Header */}
       <header className="appHeader">
-        <div className="brandMvp">
-          <img
-            className="brandLogo"
-            src="/help/chill1.jpg"
-            alt=""
-            width={52}
-            height={52}
-            decoding="async"
-            fetchPriority="high"
-          />
-          <div className="brandText">
-            <span className="brandName">Chill Apartments</span>
-            <span className="brandTag">Concierge</span>
+        <div className="appHeaderInner">
+          <div className="brandMvp">
+            <img
+              className="brandLogo"
+              src="/help/chill1.jpg"
+              alt=""
+              width={58}
+              height={58}
+              decoding="async"
+              fetchPriority="high"
+            />
+            <div className="brandText">
+              <span className="brandName">Chill Apartments</span>
+              <span className="brandTag">Concierge</span>
+            </div>
           </div>
+          {lang && headerTb && (
+            <div
+              className={`headerCtaRow${isStandalone ? " headerCtaRow--solo" : ""}`}
+              aria-label={
+                isStandalone
+                  ? headerTb.bookApart
+                  : `${headerTb.bookApart}, ${
+                      deferredInstall
+                        ? headerTb.installApp
+                        : isIOS
+                          ? headerTb.addToHome
+                          : headerTb.installApp
+                    }`
+              }
+            >
+              <a
+                className="headerBookBtn"
+                href={bookingHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {headerTb.bookApart}
+              </a>
+              {!isStandalone && (
+                <button
+                  type="button"
+                  className="headerInstallBtn"
+                  onClick={() => (deferredInstall ? handleDeferredInstall() : setInstallHelpOpen(true))}
+                >
+                  {deferredInstall
+                    ? headerTb.installApp
+                    : isIOS
+                      ? headerTb.addToHome
+                      : headerTb.installApp}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -1741,6 +1903,35 @@ export default function App(){
       )}
 
       {/* OVERLAY: Wi-Fi – výběr SSID */}
+      {installHelpOpen && lang && (
+        <div className="overlay" onClick={() => setInstallHelpOpen(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <h4>{topBarCopy(lang).installHelpTitle}</h4>
+            <p className="tips" style={{ marginTop: 0, lineHeight: 1.5 }}>
+              {isIOS ? (
+                topBarCopy(lang).installHelpIos
+              ) : (
+                <>
+                  {topBarCopy(lang).installHelpAndroid}
+                  <br />
+                  <br />
+                  {topBarCopy(lang).installHelpDesktop}
+                </>
+              )}
+            </p>
+            <div className="pillRow">
+              <button
+                type="button"
+                className="backBtn backBtn--teal"
+                onClick={() => setInstallHelpOpen(false)}
+              >
+                {topBarCopy(lang).close}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {wifiSsidSheet.open && (
         <div className="overlay" onClick={()=>setWifiSsidSheet(s=>({ ...s, open:false }))}>
           <div className="sheet" onClick={(e)=>e.stopPropagation()}>
