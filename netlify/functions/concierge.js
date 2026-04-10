@@ -1,24 +1,7 @@
 // netlify/functions/concierge.js
+// Čistě deterministická logika — bez OpenAI / bez externích AI volání.
 
-import OpenAI from "openai";
 import { PLACES } from "./data/places.js";
-
-const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
-
-/** Lazy init + timeout — šetří cold start a snižuje riziko 502 (timeout na Netlify). */
-let _openai = null;
-function getOpenAI() {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  if (!_openai) {
-    _openai = new OpenAI({
-      apiKey: key,
-      maxRetries: 1,
-      timeout: 12_000,
-    });
-  }
-  return _openai;
-}
 
 /** ====== LOKÁLNÍ DATA ====== */
 const HOTEL = {
@@ -60,19 +43,96 @@ const KEYBOX = {
   "301": "3312","302": "3313","303": "3314","304": "3315","305": "3316",
 };
 
-/** ====== HLÁŠKY ====== */
-const HANDOFF_MSG =
-  "Tyto informace zde nevyřizuji. Napište prosím přímo Davidovi. " +
-  "Rád pomohu s ostatním (restaurace, doprava, doporučení v okolí, technické potíže mimo kódy).";
+/** ====== Krátké texty podle jazyka UI (nápověda zůstává v češtině) ====== */
+const UI_STRINGS = {
+  cs: {
+    handoff:
+      "Tyto informace zde nevyřizuji. Napište prosím přímo Davidovi (WhatsApp +420 733 439 733). " +
+      "Rád pomohu s ostatním (restaurace, doprava, doporučení v okolí, technické potíže mimo kódy).",
+    ack: "Rozumím.",
+    wifiAsk: "Napište prosím **číslo apartmánu** nebo **SSID** (4 znaky) – pošlu heslo.",
+  },
+  en: {
+    handoff:
+      "I can't handle this topic here. Please message David directly (WhatsApp +420 733 439 733). " +
+      "I can help with restaurants, transport, nearby tips, and technical topics that don't need private codes.",
+    ack: "Understood.",
+    wifiAsk: "Please send your **apartment number** or **SSID** (4 characters) — I'll send the password.",
+  },
+  es: {
+    handoff:
+      "No gestiono este tema aquí. Escribe a David (WhatsApp +420 733 439 733). " +
+      "Puedo ayudar con restaurantes, transporte, consejos cercanos y temas técnicos sin códigos privados.",
+    ack: "Entendido.",
+    wifiAsk: "Envía tu **número de apartamento** o **SSID** (4 caracteres) — te envío la contraseña.",
+  },
+  de: {
+    handoff:
+      "Das kann ich hier nicht klären. Bitte schreib David direkt (WhatsApp +420 733 439 733). " +
+      "Ich helfe bei Restaurants, Transport, Tipps in der Nähe und technischen Themen ohne private Codes.",
+    ack: "Verstanden.",
+    wifiAsk: "Bitte **Apartmentnummer** oder **SSID** (4 Zeichen) senden — dann schicke ich das Passwort.",
+  },
+  fr: {
+    handoff:
+      "Je ne traite pas ce sujet ici. Écrivez à David (WhatsApp +420 733 439 733). " +
+      "Je peux aider pour les restaurants, transports, conseils à proximité et sujets techniques sans codes privés.",
+    ack: "Compris.",
+    wifiAsk: "Envoyez le **numéro d’appartement** ou le **SSID** (4 caractères) — j’enverrai le mot de passe.",
+  },
+  ru: {
+    handoff:
+      "Этот вопрос здесь не оформляю. Напишите Давиду (WhatsApp +420 733 439 733). " +
+      "Помогу с ресторанами, транспортом, советами рядом и техническими темами без личных кодов.",
+    ack: "Понял(а).",
+    wifiAsk: "Напишите **номер апартамента** или **SSID** (4 символа) — пришлю пароль.",
+  },
+  uk: {
+    handoff:
+      "Тут це не оформлюю. Напишіть Давиду (WhatsApp +420 733 439 733). " +
+      "Допоможу з ресторанами, транспортом, порадами поруч і технічними питаннями без приватних кодів.",
+    ack: "Зрозуміло.",
+    wifiAsk: "Напишіть **номер апартаменту** або **SSID** (4 символи) — надішлю пароль.",
+  },
+  nl: {
+    handoff:
+      "Dit kan ik hier niet afhandelen. Stuur David een bericht (WhatsApp +420 733 439 733). " +
+      "Ik help met restaurants, vervoer, tips in de buurt en technische zonder privécodes.",
+    ack: "Begrepen.",
+    wifiAsk: "Stuur je **appartementsnummer** of **SSID** (4 tekens) — dan stuur ik het wachtwoord.",
+  },
+  it: {
+    handoff:
+      "Non gestisco questo qui. Scrivi a David (WhatsApp +420 733 439 733). " +
+      "Posso aiutare con ristoranti, trasporti, consigli vicini e argomenti tecnici senza codici privati.",
+    ack: "Capito.",
+    wifiAsk: "Invia il **numero dell’appartamento** o l’**SSID** (4 caratteri) — ti mando la password.",
+  },
+  da: {
+    handoff:
+      "Det kan jeg ikke klare her. Skriv til David (WhatsApp +420 733 439 733). " +
+      "Jeg hjælper med restauranter, transport, tips i nærheden og tekniske emner uden private koder.",
+    ack: "Forstået.",
+    wifiAsk: "Send dit **lejlighedsnummer** eller **SSID** (4 tegn) — så sender jeg adgangskoden.",
+  },
+  pl: {
+    handoff:
+      "Tego nie załatwiam tutaj. Napisz do Davida (WhatsApp +420 733 439 733). " +
+      "Pomogę w kwestiach restauracji, transportu, tipów w pobliżu i technicznych bez prywatnych kodów.",
+    ack: "Rozumiem.",
+    wifiAsk: "Podaj **numer apartamentu** lub **SSID** (4 znaki) — wyślę hasło.",
+  },
+};
 
-/** ====== PROMPT ====== */
-const SYSTEM_PROMPT = `You are a helpful hotel concierge for CHILL Apartments.
-- Always reply in the user's language (mirror the last user message).
-- Location: ${HOTEL.address}. Keep suggestions very close (≤ ${NEARBY_RADIUS} m).
-- Do NOT handle parking, reservation changes, check-in/out, room numbers assignment, prices for rooms, or payment for accommodation.
-- If user asks about those, reply exactly:
-"${HANDOFF_MSG}"
-- Otherwise be concise (~4 sentences), friendly, and practical.`;
+function normUiLang(uiLang) {
+  const c = String(uiLang || "").toLowerCase();
+  return UI_STRINGS[c] ? c : "cs";
+}
+
+function T(uiLang, key) {
+  const pack = UI_STRINGS[normUiLang(uiLang)];
+  return pack[key] || UI_STRINGS.cs[key] || "";
+}
 
 /** ====== BLOKACE TÉMAT ====== */
 const FORBIDDEN_PATTERNS = [
@@ -104,63 +164,6 @@ function historyContainsKeys(messages = []) {
 }
 function recentlySentWifiTroubleshoot(messages = []) {
   return /Pokud Wi-?Fi nefunguje:/i.test(lastAssistant(messages) || "");
-}
-
-/** jazyková detekce + překlad */
-function guessLang(userText = "") {
-  const t = (userText || "").trim().toLowerCase();
-  if (/[ěščřžýáíéúůňťď]/i.test(t)) return "cs";
-  if (/[äöüß]/.test(t) || /\b(wie|hallo|bitte|danke|wo|ich|nicht)\b/.test(t)) return "de";
-  if (/[áéíóúñ¿¡]/.test(t) || /\b(hola|gracias|dónde|por favor|no puedo)\b/.test(t)) return "es";
-  if (/[àâçéèêëîïôùûüÿœ]/.test(t) || /\b(bonjour|merci|où|s'il vous plaît)\b/.test(t)) return "fr";
-  if (/\b(hello|please|thanks|where|wifi|password|help)\b/.test(t)) return "en";
-  if (/[а-яё]/i.test(t)) return "ru";
-  if (/[іїєґ]/i.test(t)) return "uk";
-  if (/\b(hallo|hoi|alsjeblieft|alstublieft|dank je|dank u|waar)\b/i.test(t)) return "nl";
-  if (/[àèéìòù]/.test(t) || /\b(ciao|per favore|grazie|dove|aiuto)\b/i.test(t)) return "it";
-  if (/[æøå]/i.test(t) || /\b(hej|venligst|tak|hvor)\b/i.test(t)) return "da";
-  if (/[ąćęłńóśźż]/i.test(t) || /\b(cześć|dzień dobry|proszę|dziękuję|gdzie)\b/i.test(t)) return "pl";
-  return null;
-}
-
-/** ====== TRANSLATION CACHE (LRU-ish) ====== */
-const _tCache = new Map();
-function _hash(s=""){ let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h) ^ s.charCodeAt(i); return (h>>>0).toString(36); }
-function _cacheGet(lang, text){ const k=lang+":"+_hash(text); return _tCache.get(k); }
-function _cacheSet(lang, text, out){
-  const k=lang+":"+_hash(text);
-  _tCache.set(k, out);
-  if (_tCache.size > 200) _tCache.delete(_tCache.keys().next().value); // malý LRU
-}
-async function translateToUserLang(text, userText, uiLang) {
-  const hint = uiLang || guessLang(userText);
-  if (hint === "cs" && /[ěščřžýáíéúůňťď]/i.test(text)) return text;
-
-  const cached = _cacheGet(hint || "cs", text || "");
-  if (cached) return cached;
-
-  const client = getOpenAI();
-  if (!client) return text;
-
-  try {
-    const completion = await client.chat.completions.create({
-      model: MODEL,
-      temperature: 0.0,
-      messages: [
-        {
-          role: "system",
-          content: `Rewrite ASSISTANT_MESSAGE in TARGET_LANG. Keep meaning, tone, formatting and emojis. Preserve markdown links. Be concise. TARGET_LANG=${hint || "cs"}`,
-        },
-        { role: "user", content: "ASSISTANT_MESSAGE:\n" + (text || "") },
-      ],
-    });
-    const out = completion.choices?.[0]?.message?.content?.trim() || text;
-    _cacheSet(hint || "cs", text || "", out);
-    return out;
-  } catch (e) {
-    console.error("translateToUserLang", e?.message || e);
-    return text;
-  }
 }
 
 /** ====== IMG PATHS ====== */
@@ -552,14 +555,14 @@ function buildCuratedListWithMaps(sub, {
 }
 
 /** ====== MAIN ====== */
-async function runConcierge(body) {
+function runConcierge(body) {
   const { messages = [], uiLang = null, control = null } = body || {};
   try {
     const userText = lastUser(messages);
 
     // 0) Follow-up: číslo pokoje po „Náhradní klíč“ – vrací bezpečný návod (bez kódů)
     if (isKeysFollowUp(messages)) {
-      return await translateToUserLang(buildKeyHelp(), userText, uiLang);
+      return buildKeyHelp();
     }
 
     // 1) CONTROL – pevná tlačítka
@@ -573,7 +576,7 @@ async function runConcierge(body) {
         };
         const valid = new Set(["dining","breakfast","cafe","bakery","veggie","czech","bar","vietnam","grocery","pharmacy","exchange","atm"]);
         if (!valid.has(sub)) {
-          return await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang);
+          return T(uiLang, "handoff");
         }
 
         let curated;
@@ -605,7 +608,7 @@ async function runConcierge(body) {
 
         // ⏩ list vrať rovnou (bez překladu); fallback přelož
         if (curated) return curated;
-        return await translateToUserLang(HANDOFF_MSG, userText || sub, uiLang);
+        return T(uiLang, "handoff");
       }
 
       // b) Technické / interní – vracíme markdowny + fotky
@@ -640,8 +643,8 @@ async function runConcierge(body) {
           food_delivery: buildFoodDelivery,
         };
         const fn = map[sub];
-        const text = fn ? fn() : HANDOFF_MSG;
-        return await translateToUserLang(text, userText || sub, uiLang);
+        const text = fn ? fn() : T(uiLang, "handoff");
+        return text;
       }
 
       // c) Vybavení hotelu
@@ -654,20 +657,20 @@ async function runConcierge(body) {
           service: buildAmenitiesService,
         };
         const fn = map[sub];
-        const text = fn ? fn() : HANDOFF_MSG;
-        return await translateToUserLang(text, userText || sub, uiLang);
+        const text = fn ? fn() : T(uiLang, "handoff");
+        return text;
       }
 
       // d) NOVÉ: Instrukce k ubytování
       if (control.intent === "stay" && String(control.sub || "").toLowerCase() === "instructions") {
         const text = buildStayInstructions();
-        return await translateToUserLang(text, userText, uiLang);
+        return text;
       }
     }
 
     // 2) Handoff (parkování apod.)
     if (FORBIDDEN_PATTERNS.some(r => r.test(userText))) {
-      return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
+      return T(uiLang, "handoff");
     }
 
     // 3) Intent z volného textu
@@ -679,38 +682,38 @@ async function runConcierge(body) {
       const ssid = extractSSID(userText);
       const entry = room ? wifiByRoom(room) : (ssid ? wifiBySsid(ssid) : null);
 
-      if (entry) return await translateToUserLang(buildWifiCreds(entry), userText, uiLang);
+      if (entry) return buildWifiCreds(entry);
       const reply = recentlySentWifiTroubleshoot(messages)
-        ? "Napište prosím **číslo apartmánu** nebo **SSID** (4 znaky) – pošlu heslo."
+        ? T(uiLang, "wifiAsk")
         : buildWifiTroubleshoot();
-      return await translateToUserLang(reply, userText, uiLang);
+      return reply;
     }
 
-    if (intent === "stay_instructions")  return await translateToUserLang(buildStayInstructions(), userText, uiLang);
-    if (intent === "ac")               return await translateToUserLang(buildACHelp(), userText, uiLang);
-    if (intent === "power")            return await translateToUserLang(buildPowerHelp(), userText, uiLang);
-    if (intent === "access")           return await translateToUserLang(buildAccessibility(), userText, uiLang);
-    if (intent === "smoking")          return await translateToUserLang(buildSmoking(), userText, uiLang);
-    if (intent === "pets")             return await translateToUserLang(buildPets(), userText, uiLang);
-    if (intent === "laundry")          return await translateToUserLang(buildLaundry(), userText, uiLang);
-    if (intent === "luggage")          return await translateToUserLang(buildLuggageInfo(), userText, uiLang);
-    if (intent === "keys")             return await translateToUserLang(buildKeyHelp(), userText, uiLang);
-    if (intent === "trash")            return await translateToUserLang(buildTrash(), userText, uiLang);
-    if (intent === "gate")             return await translateToUserLang(buildGate(), userText, uiLang);
-    if (intent === "doorbells")        return await translateToUserLang(buildDoorbells(), userText, uiLang);
-    if (intent === "elevator_phone")   return await translateToUserLang(buildElevatorPhone(), userText, uiLang);
-    if (intent === "fire_alarm")       return await translateToUserLang(buildFireAlarm(), userText, uiLang);
-    if (intent === "linen_towels")     return await translateToUserLang(buildLinenTowels(), userText, uiLang);
-    if (intent === "doctor")           return await translateToUserLang(buildDoctor(), userText, uiLang);
-    if (intent === "coffee")           return await translateToUserLang(buildCoffee(), userText, uiLang);
-    if (intent === "hot_water")        return await translateToUserLang(buildHotWater(), userText, uiLang);
-    if (intent === "induction")        return await translateToUserLang(buildInduction(), userText, uiLang);
-    if (intent === "hood")             return await translateToUserLang(buildHood(), userText, uiLang);
-    if (intent === "safe")             return await translateToUserLang(buildSafe(), userText, uiLang);
+    if (intent === "stay_instructions")  return buildStayInstructions();
+    if (intent === "ac")               return buildACHelp();
+    if (intent === "power")            return buildPowerHelp();
+    if (intent === "access")           return buildAccessibility();
+    if (intent === "smoking")          return buildSmoking();
+    if (intent === "pets")             return buildPets();
+    if (intent === "laundry")          return buildLaundry();
+    if (intent === "luggage")          return buildLuggageInfo();
+    if (intent === "keys")             return buildKeyHelp();
+    if (intent === "trash")            return buildTrash();
+    if (intent === "gate")             return buildGate();
+    if (intent === "doorbells")        return buildDoorbells();
+    if (intent === "elevator_phone")   return buildElevatorPhone();
+    if (intent === "fire_alarm")       return buildFireAlarm();
+    if (intent === "linen_towels")     return buildLinenTowels();
+    if (intent === "doctor")           return buildDoctor();
+    if (intent === "coffee")           return buildCoffee();
+    if (intent === "hot_water")        return buildHotWater();
+    if (intent === "induction")        return buildInduction();
+    if (intent === "hood")             return buildHood();
+    if (intent === "safe")             return buildSafe();
 
     if (intent === "local") {
       let sub = detectLocalSubtype(userText);
-      if (!sub) return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
+      if (!sub) return T(uiLang, "handoff");
       const labelMap = {
         cs:"Otevřít", en:"Open", de:"Öffnen", fr:"Ouvrir", es:"Abrir",
         ru:"Открыть", uk:"Відкрити", nl:"Openen", it:"Apri", da:"Åbn", pl:"Otwórz"
@@ -729,11 +732,11 @@ async function runConcierge(body) {
 
       // ⏩ list vrať rovnou; fallback přelož
       if (curated) return curated;
-      return await translateToUserLang(HANDOFF_MSG, userText, uiLang);
+      return T(uiLang, "handoff");
     }
 
     // 4) fallback
-    return await translateToUserLang("Rozumím.", userText, uiLang);
+    return T(uiLang, "ack");
 
   } catch (e) {
     console.error(e);
@@ -765,13 +768,6 @@ export const handler = async (event, context) => {
       body: "Method Not Allowed",
     };
   }
-  if (!process.env.OPENAI_API_KEY) {
-    return {
-      statusCode: 500,
-      headers: { "content-type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ reply: "⚠️ Server nemá nastavený OPENAI_API_KEY." }),
-    };
-  }
   let body;
   try {
     body = parseLambdaBody(event);
@@ -784,7 +780,7 @@ export const handler = async (event, context) => {
     };
   }
   try {
-    const reply = await runConcierge(body);
+    const reply = runConcierge(body);
     const text = typeof reply === "string" ? reply : String(reply ?? "");
     return {
       statusCode: 200,
