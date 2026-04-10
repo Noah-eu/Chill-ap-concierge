@@ -55,8 +55,8 @@ function removeRecentNid(nid) {
 const ESSENTIAL_MENU_NIDS = [
   "wifi_quick",
   "stay_instructions",
-  "other_trash",
-  "other_doctor",
+  "other_luggage",
+  "tech_ac",
 ];
 
 /** Z odpovědi concierge (markdown) s údaji Wi‑Fi. */
