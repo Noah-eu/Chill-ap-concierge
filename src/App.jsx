@@ -113,6 +113,7 @@ const AppStyles = () => (
     :root{
       --ink:#0f1419;
       --ink-soft:#3d4550;
+      --light-surface-ink:#0f1419;
       --muted:#5c6570;
       --surface:#ffffff;
       --surface-2:#f1f5f4;
@@ -234,7 +235,7 @@ const AppStyles = () => (
     }
     .brandText{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;text-align:left}
     .brandName{
-      font-weight:800;font-size:clamp(1.12rem, 4vw, 1.3rem);letter-spacing:-.03em;line-height:1.15;color:var(--ink);
+      font-weight:800;font-size:clamp(1.12rem, 4vw, 1.3rem);letter-spacing:-.03em;line-height:1.15;color:var(--light-surface-ink);
     }
     .brandTag{
       font-size:.74rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
@@ -457,11 +458,12 @@ const AppStyles = () => (
       margin-left:auto;
       background:linear-gradient(145deg, #ecfdf5, #d1fae5);
       border-color:rgba(20,184,166,.25);
+      color:var(--light-surface-ink);
     }
     .bot{
       background:linear-gradient(180deg, #ffffff, #f9fafb);
       border-color:color-mix(in oklab,var(--accent),transparent 88%);
-      color:var(--ink);
+      color:var(--light-surface-ink);
     }
 
     .bot p{margin:6px 0}
