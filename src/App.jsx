@@ -940,7 +940,7 @@ const whatsappI18n = {
 /** Hlavička: rezervace + instalace PWA (mimo obrazovky jazyka) */
 const TOP_BAR_I18N = {
   cs: {
-    bookApart: "Rezervovat apartmán",
+    bookApart: "Rezervovat další pobyt",
     installApp: "Instalovat aplikaci",
     addToHome: "Přidat na plochu",
     installHelpTitle: "Aplikace na mobilu",
@@ -953,7 +953,7 @@ const TOP_BAR_I18N = {
     close: "Zavřít",
   },
   en: {
-    bookApart: "Book your stay",
+    bookApart: "Book your next stay",
     installApp: "Install app",
     addToHome: "Add to Home Screen",
     installHelpTitle: "App on your phone",
@@ -965,10 +965,19 @@ const TOP_BAR_I18N = {
       'On desktop, look for the install icon in the address bar or "Install app" in the browser menu.',
     close: "Close",
   },
+  es: { bookApart: "Reservar próxima estancia" },
+  de: { bookApart: "Nächsten Aufenthalt buchen" },
+  fr: { bookApart: "Réserver le prochain séjour" },
+  uk: { bookApart: "Забронювати наступний візит" },
+  nl: { bookApart: "Boek uw volgende verblijf" },
+  it: { bookApart: "Prenota il prossimo soggiorno" },
+  da: { bookApart: "Book dit næste ophold" },
+  pl: { bookApart: "Zarezerwuj kolejny pobyt" },
+  ru: { bookApart: "Забронировать следующий визит" },
 };
 
 function topBarCopy(code) {
-  return TOP_BAR_I18N[code] ?? TOP_BAR_I18N.en;
+  return { ...TOP_BAR_I18N.en, ...(TOP_BAR_I18N[code] ?? {}) };
 }
 
 const tr = {
