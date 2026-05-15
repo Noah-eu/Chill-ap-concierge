@@ -776,8 +776,8 @@ const AppStyles = () => (
     .langMenuGrid .langBtnWide{
       grid-column:1 / -1;
       aspect-ratio:auto;
-      min-height:54px;
-      padding:14px 16px;
+      min-height:108px;
+      padding:20px 16px;
     }
 
     .langChooserCard{
@@ -855,6 +855,12 @@ const AppStyles = () => (
       }
       .scroller,.searchPanel{
         border-radius:14px;
+      }
+      .shortcutsHeader .btnRow{width:100%}
+      .shortcutsHeader .backBtn--language{
+        flex:1 0 100%;
+        width:100%;
+        box-sizing:border-box;
       }
     }
     @media (max-width:480px){
