@@ -734,8 +734,39 @@ function buildStayInstructions(uiLang) {
   return injectStayImages(STAY_INSTRUCTIONS_BY_LANG[lang] || STAY_INSTRUCTIONS_BY_LANG.en);
 }
 
+const TRANSPORT_ROUTE_URLS = {
+  oldTown: "https://www.google.com/maps/dir/?api=1&origin=Sokolsk%C3%A1%201614%2F64%2C%20Praha&destination=Starom%C4%9Bstsk%C3%A9%20n%C3%A1m%C4%9Bst%C3%AD%2C%20Praha&travelmode=walking",
+  mainStation: "https://www.google.com/maps/dir/?api=1&origin=Sokolsk%C3%A1%201614%2F64%2C%20Praha&destination=Praha%20hlavn%C3%AD%20n%C3%A1dra%C5%BE%C3%AD&travelmode=walking",
+  ipPavlova: "https://www.google.com/maps/dir/?api=1&origin=Sokolsk%C3%A1%201614%2F64%2C%20Praha&destination=I.%20P.%20Pavlova%2C%20Praha&travelmode=walking",
+};
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function transportRouteLink(href, label) {
+  return `<a class="transportRouteLink" href="${href}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+}
+
 function buildTransport(uiLang) {
-  return getContentPack(uiLang).transport;
+  const p = getContentPack(uiLang);
+  const labels = p.transportRouteLabels || getContentPack("en").transportRouteLabels;
+  const lines = String(p.transport || "").split("\n");
+  if (lines.length < 5) return p.transport;
+  return [
+    lines[0],
+    lines[1],
+    transportRouteLink(TRANSPORT_ROUTE_URLS.oldTown, labels.oldTown),
+    lines[2],
+    transportRouteLink(TRANSPORT_ROUTE_URLS.mainStation, labels.mainStation),
+    lines[3],
+    lines[4],
+    transportRouteLink(TRANSPORT_ROUTE_URLS.ipPavlova, labels.ipPavlova),
+  ].join("\n");
 }
 
 function buildFoodDelivery(uiLang) {

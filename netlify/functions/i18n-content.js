@@ -143,6 +143,11 @@ const CS = {
     "– **Jízdenku** koupíte **bezkontaktní kartou** přímo **u prostředních dveří** tramvaje.",
     "– Na **Pražský hrad** jede **tram 22** z **I. P. Pavlova** (cca **100 m** od nás).",
   ].join("\n"),
+  transportRouteLabels: {
+    oldTown: "Otevřít trasu na Staroměstské náměstí",
+    mainStation: "Otevřít trasu na hlavní nádraží",
+    ipPavlova: "Otevřít trasu na I. P. Pavlova",
+  },
 
   foodDelivery: [
     "🛵 **Jídlo domů**",
@@ -325,6 +330,11 @@ const EN = {
     "– Buy a **ticket** with a **contactless card** at the **middle doors** of the tram.",
     "– **Tram 22** to **Prague Castle** from **I. P. Pavlova** (~**100 m** from us).",
   ].join("\n"),
+  transportRouteLabels: {
+    oldTown: "Open route to Old Town Square",
+    mainStation: "Open route to the main train station",
+    ipPavlova: "Open route to I. P. Pavlova",
+  },
 
   foodDelivery: [
     "🛵 **Food delivery**",

@@ -129,6 +129,11 @@ export const EXTRA_PACKS = {
       "– El **billete** se paga con **tarjeta sin contacto** en las **puertas del medio** del tranvía.",
       "– **Tranvía 22** al **Castillo** desde **I. P. Pavlova** (~**100 m** de aquí).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Abrir ruta a la Plaza de la Ciudad Vieja",
+      mainStation: "Abrir ruta a la estación central",
+      ipPavlova: "Abrir ruta a I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Comida a domicilio**",
       "Puedes pedir al apartamento con **Foodora** o **Wolt**.",
@@ -301,6 +306,11 @@ export const EXTRA_PACKS = {
       "– **Fahrkarte** kaufen Sie mit **Kontaktkarte** an den **mittleren Türen** der Straßenbahn.",
       "– **Linie 22** zur **Burg** ab **I. P. Pavlova** (~**100 m** von uns).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Route zum Altstädter Ring öffnen",
+      mainStation: "Route zum Hauptbahnhof öffnen",
+      ipPavlova: "Route zu I. P. Pavlova öffnen",
+    },
     foodDelivery: [
       "🛵 **Essen liefern lassen**",
       "Bestellung direkt ins Apartment über **Foodora** oder **Wolt**.",
@@ -473,6 +483,11 @@ export const EXTRA_PACKS = {
       "– **Ticket** avec **carte sans contact** aux **portes du milieu** du tram.",
       "– **Tram 22** vers le **château** depuis **I. P. Pavlova** (~**100 m** d’ici).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Ouvrir l’itinéraire vers la place de la Vieille-Ville",
+      mainStation: "Ouvrir l’itinéraire vers la gare principale",
+      ipPavlova: "Ouvrir l’itinéraire vers I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Livraison de repas**",
       "Commandez directement à l’appartement via **Foodora** ou **Wolt**.",
@@ -645,6 +660,11 @@ export const EXTRA_PACKS = {
       "– **Билет** — **бесконтактной картой** у **средних дверей** трамвая.",
       "– **Трамвай 22** к **Граду** от **I. P. Pavlova** (~**100 м** от нас).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Открыть маршрут до Староместской площади",
+      mainStation: "Открыть маршрут до Главного вокзала",
+      ipPavlova: "Открыть маршрут до I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Доставка еды**",
       "Заказ прямо в апартаменты: **Foodora** или **Wolt**.",
@@ -817,6 +837,11 @@ export const EXTRA_PACKS = {
       "– **Квиток** — **безконтактною карткою** біля **середніх дверей** трамвая.",
       "– **Трамвай 22** до **Граду** від **I. P. Pavlova** (~**100 м** від нас).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Відкрити маршрут до Староміської площі",
+      mainStation: "Відкрити маршрут до головного вокзалу",
+      ipPavlova: "Відкрити маршрут до I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Доставка їжі**",
       "Замовлення прямо в апартаменти: **Foodora** або **Wolt**.",
@@ -989,6 +1014,11 @@ export const EXTRA_PACKS = {
       "– **Ticket** met **contactloze kaart** bij de **middelste deuren** van de tram.",
       "– **Tram 22** naar de **burcht** vanaf **I. P. Pavlova** (~**100 m** van ons).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Route naar het Oude Stadsplein openen",
+      mainStation: "Route naar het hoofdstation openen",
+      ipPavlova: "Route naar I. P. Pavlova openen",
+    },
     foodDelivery: [
       "🛵 **Eten laten bezorgen**",
       "Bestel rechtstreeks naar het appartement via **Foodora** of **Wolt**.",
@@ -1161,6 +1191,11 @@ export const EXTRA_PACKS = {
       "– **Biglietto** con **carta contactless** alle **porte centrali** del tram.",
       "– **Tram 22** per il **Castello** da **I. P. Pavlova** (~**100 m** da noi).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Apri il percorso per Piazza della Città Vecchia",
+      mainStation: "Apri il percorso per la stazione centrale",
+      ipPavlova: "Apri il percorso per I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Consegna cibo**",
       "Ordina direttamente in appartamento con **Foodora** o **Wolt**.",
@@ -1333,6 +1368,11 @@ export const EXTRA_PACKS = {
       "– **Billet** med **kontaktløst kort** ved **midterdørene** på sporvognen.",
       "– **Sporvogn 22** til **borgen** fra **I. P. Pavlova** (~**100 m** fra os).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Åbn rute til Den Gamle Bys Plads",
+      mainStation: "Åbn rute til hovedbanegården",
+      ipPavlova: "Åbn rute til I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Mad ud af huset**",
       "Bestil direkte til lejligheden via **Foodora** eller **Wolt**.",
@@ -1505,6 +1545,11 @@ export const EXTRA_PACKS = {
       "– **Bilet** kartą **bezstykową** przy **środkowych drzwiach** tramwaju.",
       "– **Tramwaj 22** na **Zamek** z **I. P. Pavlova** (~**100 m** od nas).",
     ].join("\n"),
+    transportRouteLabels: {
+      oldTown: "Otwórz trasę na Rynek Starego Miasta",
+      mainStation: "Otwórz trasę na dworzec główny",
+      ipPavlova: "Otwórz trasę na I. P. Pavlova",
+    },
     foodDelivery: [
       "🛵 **Jedzenie na wynos / dostawa**",
       "Zamówienie prosto do apartamentu przez **Foodora** lub **Wolt**.",

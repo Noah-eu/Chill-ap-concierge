@@ -438,6 +438,13 @@ const AppStyles = () => (
       transition:transform .15s ease, box-shadow .15s ease;
     }
     .bot a:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(13,148,136,.32)}
+    .bot a.transportRouteLink{
+      display:block;width:fit-content;max-width:100%;box-sizing:border-box;
+      padding:7px 12px;margin:2px 0 8px 0;border-radius:10px;
+      border:1px solid rgba(13,148,136,.30);background:#fff;color:var(--accent-2);
+      box-shadow:none;font-size:.82rem;font-weight:750;line-height:1.25;
+    }
+    .bot a.transportRouteLink:hover{box-shadow:0 4px 10px rgba(13,148,136,.14)}
 
     .chipPrimary{
       --btn:var(--accent);
@@ -1860,7 +1867,9 @@ export default function App(){
       );
     }
 
-    let clean = DOMPurify.sanitize(raw);
+    let clean = DOMPurify.sanitize(raw, {
+      ADD_ATTR: ["target", "rel"],
+    });
     if (!clean.trim()) {
       clean = DOMPurify.sanitize(raw, {
         ADD_TAGS: ["img"],
@@ -1879,7 +1888,16 @@ export default function App(){
     }
 
     const bubble = (
-      <div className="bubble bot" dangerouslySetInnerHTML={{ __html: clean }} />
+      <div
+        className="bubble bot"
+        onClick={(event) => {
+          const link = event.target?.closest?.("a.transportRouteLink");
+          if (!link) return;
+          event.preventDefault();
+          window.open(link.href, "_blank", "noopener,noreferrer");
+        }}
+        dangerouslySetInnerHTML={{ __html: clean }}
+      />
     );
     const wifiCreds = extractWifiCredsFromReply(src);
     if (!wifiCreds) return bubble;
