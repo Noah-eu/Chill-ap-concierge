@@ -12,43 +12,10 @@ const MATTERPORT_URL =
 const BOOKING_URL_CS = "https://www.chillapartments.cz/rezervace-online/";
 const BOOKING_URL_INTL = "https://www.chillapartments.cz/en/rezervace-online/";
 
-const LS_RECENT = "chill_concierge_recent_v1";
 const LS_LAST_REPLY = "chill_concierge_last_reply_v1";
 
 function flowNode(nid, rest) {
   return { nid, ...rest };
-}
-
-function loadRecentNids() {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(LS_RECENT);
-    const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr.slice(0, 8) : [];
-  } catch {
-    return [];
-  }
-}
-
-function pushRecentNid(nid) {
-  if (!nid || typeof window === "undefined") return;
-  try {
-    const cur = loadRecentNids().filter((x) => x !== nid);
-    cur.unshift(nid);
-    localStorage.setItem(LS_RECENT, JSON.stringify(cur.slice(0, 5)));
-  } catch {
-    /* ignore */
-  }
-}
-
-function removeRecentNid(nid) {
-  if (!nid || typeof window === "undefined") return;
-  try {
-    const cur = loadRecentNids().filter((x) => x !== nid);
-    localStorage.setItem(LS_RECENT, JSON.stringify(cur));
-  } catch {
-    /* ignore */
-  }
 }
 
 /** Kořenová témata pro obrazovku „Důležité teď“ (musí odpovídat `nid` v makeFlows). */
@@ -82,7 +49,7 @@ function findPathByNid(nodes, targetNid, pathSoFar = []) {
   return null;
 }
 
-/** Otevře větev menu podle `nid` (deep link / naposledy). */
+/** Otevře větev menu podle `nid` (deep link). */
 function navigateFlowNid(nid, flows, actions) {
   if (!flows?.length || !nid) return false;
   const path = findPathByNid(flows, nid);
@@ -332,20 +299,6 @@ const AppStyles = () => (
       border:1px solid var(--border);
     }
     .breadcrumbNav .crumbSep{opacity:.5;padding:0 5px}
-    .recentRow{margin:0 0 10px}
-    .recentRowLabel{
-      font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;
-      letter-spacing:.12em;margin:0 0 6px 2px;
-    }
-    .recentChips{display:flex;flex-wrap:wrap;gap:8px}
-    .recentChip{
-      appearance:none;font-family:var(--font-app);font-size:.82rem;font-weight:700;
-      padding:10px 14px;border-radius:999px;border:1px solid color-mix(in oklab,var(--accent),transparent 45%);
-      background:linear-gradient(180deg,var(--surface),var(--surface-2));color:var(--accent-2);
-      cursor:pointer;min-height:44px;touch-action:manipulation;-webkit-user-select:none;user-select:none;
-    }
-    .recentChip:hover,.recentChip:focus-visible{border-color:var(--accent);outline:none}
-
     .essentialsGrid{
       display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 10px;
     }
@@ -1427,8 +1380,6 @@ const replyI18n = {
 const uxStrings = {
   en: {
     breadcrumbHome: "Home",
-    recentTitle: "Recently used",
-    recentRemoveHint: "Hold to remove from this list",
     searchTryTitle: "Try:",
     searchTryWifi: "Wi‑Fi",
     searchTryInstructions: "Check-in instructions",
@@ -1452,8 +1403,6 @@ const uxStrings = {
   },
   cs: {
     breadcrumbHome: "Domů",
-    recentTitle: "Naposledy",
-    recentRemoveHint: "Podržením položku odeberete z Naposledy",
     searchTryTitle: "Zkuste:",
     searchTryWifi: "Wi‑Fi",
     searchTryInstructions: "Instrukce k ubytování",
@@ -1600,7 +1549,6 @@ export default function App(){
   const [wifiSsidSheet, setWifiSsidSheet] = useState({ open:false, ssid:null });
 
   const [wifiCtas, setWifiCtas] = useState({ showPassword:false, showNotOk:false });
-  const [recentTick, setRecentTick] = useState(0);
   /** false = jen „Důležité teď“ na kořeni; true = plná mřížka témat. */
   const [showAllTopics, setShowAllTopics] = useState(false);
   const [sentToast, setSentToast] = useState(false);
@@ -1620,16 +1568,6 @@ export default function App(){
   const deepLinkConsumed = useRef(false);
   const onChipClickRef = useRef(() => {});
   const lastTouchedNidRef = useRef(null);
-  const recentLongPressTimerRef = useRef(null);
-  const skipNextRecentChipClickRef = useRef(false);
-
-  const clearRecentLongPressTimer = () => {
-    if (recentLongPressTimerRef.current != null) {
-      clearTimeout(recentLongPressTimerRef.current);
-      recentLongPressTimerRef.current = null;
-    }
-  };
-
   const scrollToMainNav = () => {
     requestAnimationFrame(() => {
       searchPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1696,14 +1634,6 @@ export default function App(){
     return () => window.clearTimeout(t);
   }, [shareNotice]);
 
-  useEffect(() => {
-    return () => {
-      if (recentLongPressTimerRef.current != null) {
-        clearTimeout(recentLongPressTimerRef.current);
-        recentLongPressTimerRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const anyOpen =
@@ -2093,16 +2023,6 @@ export default function App(){
     stack.length === 0 ? FLOWS :
     stack[stack.length - 1]?.children ?? FLOWS;
 
-  const recentList = useMemo(() => {
-    if (!FLOWS.length) return [];
-    return loadRecentNids()
-      .map((nid) => {
-        const path = findPathByNid(FLOWS, nid);
-        if (!path?.length) return null;
-        return { nid, label: path[path.length - 1].label };
-      })
-      .filter(Boolean);
-  }, [FLOWS, recentTick]);
 
   const essentialTiles = useMemo(() => {
     if (!FLOWS.length) return [];
@@ -2146,16 +2066,8 @@ export default function App(){
   const onChipClick = (n) => {
     if (n?.nid) lastTouchedNidRef.current = n.nid;
 
-    const bumpRecent = () => {
-      if (n.nid) {
-        pushRecentNid(n.nid);
-        setRecentTick((x) => x + 1);
-      }
-    };
-
     if (n.children) {
       setWifiCtas({ showPassword:false, showNotOk:false });
-      bumpRecent();
       return openNode(n);
     }
 
@@ -2163,15 +2075,12 @@ export default function App(){
       try { window.open(MATTERPORT_URL, "_blank", "noopener,noreferrer"); } catch {}
       setWifiCtas({ showPassword:false, showNotOk:false });
       setShortcutsOpen(false);
-      pushRecentNid("tour_3d");
-      setRecentTick((x) => x + 1);
       setChat(c => [...c, { role:"assistant", content: tr[lang]?.tourOpenMsg || "Link" }]);
       return;
     }
 
     if (n.control?.kind === "wifi") {
       setShortcutsOpen(false);
-      bumpRecent();
       setWifiCtas({ showPassword:true, showNotOk:false });
       return sendControl("Wi-Fi", { intent:"tech", sub:"wifi" }).then((res) => {
         if (res?.ok) setSentToast(true);
@@ -2181,7 +2090,6 @@ export default function App(){
     if (n.control) {
       setShortcutsOpen(false);
       setWifiCtas({ showPassword:false, showNotOk:false });
-      bumpRecent();
       return sendControl(n.label, n.control).then((res) => {
         if (res?.ok) setSentToast(true);
       });
@@ -2641,61 +2549,6 @@ export default function App(){
                 </button>
               </>
             )}
-            {recentList.length > 0 && (
-              <div className="recentRow">
-                <p className="recentRowLabel">{tUx(lang, "recentTitle")}</p>
-                <div className="recentChips">
-                  {recentList.map((r) => (
-                    <button
-                      key={r.nid}
-                      type="button"
-                      className="recentChip"
-                      title={tUx(lang, "recentRemoveHint")}
-                      aria-label={`${r.label}. ${tUx(lang, "recentRemoveHint")}`}
-                      onContextMenu={(e) => e.preventDefault()}
-                      onPointerDown={(e) => {
-                        if (e.pointerType === "mouse" && e.button !== 0) return;
-                        clearRecentLongPressTimer();
-                        const nid = r.nid;
-                        recentLongPressTimerRef.current = window.setTimeout(() => {
-                          recentLongPressTimerRef.current = null;
-                          skipNextRecentChipClickRef.current = true;
-                          removeRecentNid(nid);
-                          setRecentTick((x) => x + 1);
-                          if (typeof navigator !== "undefined" && navigator.vibrate) {
-                            try {
-                              navigator.vibrate(15);
-                            } catch {
-                              /* ignore */
-                            }
-                          }
-                        }, 550);
-                      }}
-                      onPointerUp={clearRecentLongPressTimer}
-                      onPointerCancel={clearRecentLongPressTimer}
-                      onPointerLeave={clearRecentLongPressTimer}
-                      onClick={() => {
-                        if (skipNextRecentChipClickRef.current) {
-                          skipNextRecentChipClickRef.current = false;
-                          return;
-                        }
-                        lastTouchedNidRef.current = r.nid;
-                        navigateFlowNid(r.nid, FLOWS, {
-                          setStack,
-                          setShortcutsOpen,
-                          setWifiCtas,
-                          scrollToMainNav,
-                          onChipClick: (node) => onChipClick(node),
-                        });
-                      }}
-                    >
-                      {r.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {showRootTopicGrid && (
               <div className="menuGrid">
                 {currentChildren.map((n, idx) =>
@@ -2740,7 +2593,9 @@ export default function App(){
               </div>
             )}
 
-            <div className="tips" style={{ marginTop:8 }}>{t(lang,"stillAsk")}</div>
+            {stack.length > 0 && (
+              <div className="tips" style={{ marginTop: 8 }}>{t(lang, "stillAsk")}</div>
+            )}
           </div>
         )}
 
