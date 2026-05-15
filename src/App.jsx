@@ -681,11 +681,11 @@ const AppStyles = () => (
     .searchEmpty{padding:12px 14px;color:var(--muted);font-size:14px}
 
     .shortcuts{
-      flex:0 1 auto;
+      flex:0 0 auto;
       min-height:0;
       border:none;
       border-radius:0;
-      padding:4px 0 8px;
+      padding:4px 0 calc(var(--whatsapp-dock) + 40px + env(safe-area-inset-bottom,0px));
       background:transparent;
       box-shadow:none;
       scroll-margin-top:14px;
