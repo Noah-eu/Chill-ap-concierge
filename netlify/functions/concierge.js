@@ -627,12 +627,10 @@ function injectStayImages(stayRaw) {
 function buildACHelp(uiLang) {
   const p = getContentPack(uiLang);
   return [
+    ...p.ac,
     `![](${IMG(P.AC)})`,
-    p.ac[0],
     `![](${IMG(P.BALCONY)})`,
-    p.ac[1],
-    p.ac[2],
-  ].join("\n");
+  ].join("\n\n");
 }
 
 function buildPowerHelp(uiLang) {

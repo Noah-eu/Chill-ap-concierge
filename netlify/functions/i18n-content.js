@@ -22,8 +22,13 @@ const CS = {
   wifiCredsPass: "heslo",
 
   ac: [
-    "U klimatizace zkontrolujte režim: ☀️ = topení, ❄️ = chlazení.",
-    "Pokud **zelená kontrolka bliká**, je potřeba restart: na **2. patře** na balkoně jsou **AC vypínače**. Vypněte svůj na ~30 s a pak zapněte.",
+    "Klimatizace se ovládá dálkovým ovladačem.",
+    "Nejprve zkontrolujte režim na ovladači:\n☀️ = topení\n❄️ = chlazení",
+    "Zkontrolujte také, že na ovladači není zapnutý časovač (Timer). Pokud je časovač aktivní, klimatizace nemusí reagovat tak, jak očekáváte, nebo se může sama zapínat či vypínat.",
+    "Pokud nevíte, jak časovač vypnout, nejjednodušší řešení je vyndat baterie z ovladače a znovu je vložit. Tím se ovladač obvykle resetuje.",
+    "Poté namiřte ovladač přímo na jednotku klimatizace a klimatizaci vypněte a znovu zapněte.",
+    "Pokud máte v apartmánu více klimatizačních jednotek, zopakujte stejný postup u každé jednotky zvlášť.",
+    "Pokud zelená kontrolka na klimatizaci bliká, je potřeba klimatizaci restartovat. Na balkoně ve **2. patře** jsou **AC vypínače**. Vypněte vypínač pro vaši klimatizaci přibližně na **30 sekund** a potom ho znovu zapněte.",
     "To obvykle problém vyřeší.",
   ],
   power: [
@@ -200,9 +205,14 @@ const EN = {
   wifiCredsPass: "password",
 
   ac: [
-    "On the AC unit, check the mode: ☀️ = heating, ❄️ = cooling.",
-    "If the **green indicator is blinking**, it needs a reset: on the **2nd floor**, on the balcony, there are **AC breakers**. Turn yours off for ~30 s, then back on.",
-    "That usually fixes the issue.",
+    "The air conditioning is controlled with the remote control.",
+    "First, check the mode on the remote control:\n☀️ = heating\n❄️ = cooling",
+    "Also make sure that the Timer function is not active on the remote control. If the timer is active, the air conditioning may not respond as expected, or it may turn itself on or off automatically.",
+    "If you are not sure how to turn the timer off, the easiest solution is to remove the batteries from the remote control and put them back in. This usually resets the remote control.",
+    "Then point the remote control directly at the air conditioning unit and turn the unit off and on again.",
+    "If your apartment has more than one air conditioning unit, repeat the same steps for each unit separately.",
+    "If the green light on the air conditioning unit is blinking, the unit needs to be restarted. The AC switches are on the balcony on the **2nd floor**. Turn off the switch for your air conditioning unit for about **30 seconds** and then turn it back on.",
+    "This usually solves the problem.",
   ],
   power: [
     "If power goes out in the apartment:",
