@@ -689,24 +689,25 @@ const AppStyles = () => (
     }
     .searchWrap{position:relative}
     .searchInputRow{
-      display:flex;align-items:center;gap:10px;
-      padding:4px 4px 4px 14px;border-radius:var(--radius-btn);
-      border:2px solid color-mix(in oklab,var(--accent),transparent 44%);
-      background:linear-gradient(180deg,#ffffff,#eef7f5);
-      box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 2px 10px rgba(13,148,136,.08);
+      display:flex;align-items:center;gap:8px;
+      padding:5px 8px 5px 12px;border-radius:12px;
+      border:1px solid color-mix(in oklab,var(--border),var(--accent) 18%);
+      background:linear-gradient(180deg,#edf5f2 0%,#f8fbfa 100%);
+      box-shadow:inset 0 2px 5px rgba(15,23,42,.12),inset 0 -1px 0 rgba(255,255,255,.88);
       transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
     .searchWrap:focus-within .searchInputRow{
       border-color:color-mix(in oklab,var(--accent),black 8%);
-      box-shadow:0 0 0 4px color-mix(in oklab,var(--accent),transparent 78%),0 4px 14px rgba(13,148,136,.16);
+      box-shadow:0 0 0 4px color-mix(in oklab,var(--accent),transparent 78%),inset 0 1px 3px rgba(15,23,42,.1);
       background:#fff;
     }
-    .searchIcon{opacity:.72;font-size:1.16rem;flex-shrink:0;color:var(--accent-2)}
+    .searchIcon{opacity:.62;font-size:1.08rem;flex-shrink:0;color:var(--accent-2)}
     .searchInput{
       flex:1;min-width:0;border:none;background:transparent;
-      font:inherit;font-size:1rem;padding:12px 8px;outline:none;color:var(--ink);
+      font:inherit;font-size:.96rem;padding:11px 4px 11px 0;outline:none;color:var(--ink);
     }
     .searchInput::placeholder{color:#4b5563;opacity:.92}
+    @media (max-width:420px){.searchInput{font-size:.92rem}}
     .searchResults{
       position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1200;
       max-height:min(52vh,360px);overflow:auto;margin:0;padding:6px;list-style:none;
@@ -1263,77 +1264,77 @@ const tr = {
 const searchI18n = {
   cs: {
     searchLabel: "Rychlé vyhledávání",
-    searchPlaceholder: "Co hledáte? (Wi‑Fi, klimatizace, prádelna...)",
+    searchPlaceholder: "Hledat: Wi‑Fi, klimatizace, prádelna...",
     searchNoResults: "Zkuste jiná slova nebo vyberte téma níže.",
     searchHint: "Najdeme nejbližší položku v menu podle vašeho dotazu.",
     searchGo: "Otevřít",
   },
   en: {
     searchLabel: "Quick search",
-    searchPlaceholder: "What do you need? (Wi‑Fi, air conditioning, laundry...)",
+    searchPlaceholder: "Search: Wi‑Fi, AC, laundry...",
     searchNoResults: "Try different words or pick a topic below.",
     searchHint: "We match the closest menu option to what you type.",
     searchGo: "Open",
   },
   es: {
     searchLabel: "Búsqueda rápida",
-    searchPlaceholder: "¿Qué necesita? (Wi‑Fi, aire acondicionado, lavandería...)",
+    searchPlaceholder: "Buscar: Wi‑Fi, A/C, lavandería...",
     searchNoResults: "Prueba otras palabras o elige un tema abajo.",
     searchHint: "Mostramos la opción del menú más parecida a lo que escribes.",
     searchGo: "Abrir",
   },
   de: {
     searchLabel: "Schnellsuche",
-    searchPlaceholder: "Was suchen Sie? (Wi‑Fi, Klimaanlage, Wäscheraum...)",
+    searchPlaceholder: "Suche: Wi‑Fi, Klima, Wäsche...",
     searchNoResults: "Andere Wörter versuchen oder unten ein Thema wählen.",
     searchHint: "Wir finden den passendsten Menüpunkt zu deiner Eingabe.",
     searchGo: "Öffnen",
   },
   fr: {
     searchLabel: "Recherche rapide",
-    searchPlaceholder: "Que recherchez-vous ? (Wi‑Fi, climatisation, buanderie...)",
+    searchPlaceholder: "Rechercher: Wi‑Fi, clim, linge...",
     searchNoResults: "Essayez d’autres mots ou choisissez un sujet ci-dessous.",
     searchHint: "Nous proposons l’entrée de menu la plus proche de votre texte.",
     searchGo: "Ouvrir",
   },
   ru: {
     searchLabel: "Быстрый поиск",
-    searchPlaceholder: "Что вы ищете? (Wi‑Fi, кондиционер, прачечная...)",
+    searchPlaceholder: "Поиск: Wi‑Fi, AC, стирка...",
     searchNoResults: "Попробуйте другие слова или выберите тему ниже.",
     searchHint: "Показываем ближайший пункт меню к вашему запросу.",
     searchGo: "Открыть",
   },
   uk: {
     searchLabel: "Швидкий пошук",
-    searchPlaceholder: "Що ви шукаєте? (Wi‑Fi, кондиціонер, пральня...)",
+    searchPlaceholder: "Пошук: Wi‑Fi, AC, пральня...",
     searchNoResults: "Спробуйте інші слова або оберіть тему нижче.",
     searchHint: "Показуємо найближчий пункт меню до вашого запиту.",
     searchGo: "Відкрити",
   },
   nl: {
     searchLabel: "Snel zoeken",
-    searchPlaceholder: "Waar zoekt u naar? (Wi‑Fi, airconditioning, wasruimte...)",
+    searchPlaceholder: "Zoeken: Wi‑Fi, airco, wasruimte...",
     searchNoResults: "Probeer andere woorden of kies hieronder een onderwerp.",
     searchHint: "We tonen het dichtstbijzijnde menu-item bij je invoer.",
     searchGo: "Openen",
   },
   it: {
     searchLabel: "Ricerca veloce",
-    searchPlaceholder: "Cosa cerca? (Wi‑Fi, aria condizionata, lavanderia...)",
+    searchPlaceholder: "Cerca: Wi‑Fi, A/C, lavanderia...",
     searchNoResults: "Prova altre parole o scegli un argomento qui sotto.",
     searchHint: "Troviamo la voce di menu più vicina a ciò che scrivi.",
     searchGo: "Apri",
   },
   da: {
     searchLabel: "Hurtigsøgning",
-    searchPlaceholder: "Hvad søger du? (Wi‑Fi, aircondition, vaskeri...)",
+    searchPlaceholder: "Søg: Wi‑Fi, aircondition, vaskeri...",
     searchNoResults: "Prøv andre ord eller vælg et emne nedenfor.",
     searchHint: "Vi finder det menupunkt, der ligger tættest på det, du skriver.",
     searchGo: "Åbn",
   },
   pl: {
     searchLabel: "Szybkie wyszukiwanie",
-    searchPlaceholder: "Czego szukasz? (Wi‑Fi, klimatyzacja, pralnia...)",
+    searchPlaceholder: "Szukaj: Wi‑Fi, klima, pralnia...",
     searchNoResults: "Spróbuj innych słów lub wybierz temat poniżej.",
     searchHint: "Pokazujemy najbliższą pozycję menu do Twojego zapytania.",
     searchGo: "Otwórz",
