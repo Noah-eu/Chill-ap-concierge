@@ -461,6 +461,7 @@ const AppStyles = () => (
     .bot{
       background:linear-gradient(180deg, #ffffff, #f9fafb);
       border-color:color-mix(in oklab,var(--accent),transparent 88%);
+      color:var(--ink);
     }
 
     .bot p{margin:6px 0}

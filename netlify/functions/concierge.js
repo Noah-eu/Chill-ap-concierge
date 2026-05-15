@@ -190,15 +190,59 @@ const P = {
   DOOR_BELLS: "/help/door-bells.jpg",
   ENTRY_DIAL: "/help/entry-dialer.jpg",
   KEYBOX_WALL: "/help/key-box-wall.jpg",
-  /** Schránka na klíče (soubor s mezerou v názvu → %20 v URL) */
-  KEY_BOX: "/help/10.%20Key-box.jpg",
+  KEY_BOX: "/help/key-box.jpg",
   MAIN_ENTRANCE: "/help/11.%20Main%20entrance.jpg",
   ELEVATOR: "/help/elevator.jpg",
   FLOOR_HALL: "/help/floor-hall.jpg",
   ROOM_DOOR: "/help/room-door.jpg",
-  ENTRANCE: "/help/Entrance.jpg",
+  ENTRANCE: "/help/entrance.jpg",
   DIALER: "/help/dialer.jpg",
 };
+
+const STAY_INSTRUCTIONS_RAW = [
+  "## Check-in instructions",
+  "",
+  "### Check-in & Keys",
+  "",
+  "Check-in: from 14:00 (earlier if ready).",
+  "If you arrive before 11:00, please use the luggage room next to the key boxes, code: 3142#",
+  "",
+  "%%IMG_LUGGAGE%%",
+  "",
+  "After 11:00:",
+  "If your apartment is already cleaned, you may stay in the apartment.",
+  "If not yet cleaned, you may leave your luggage inside and return later.",
+  "",
+  "Entrance to the building from the parking lot: code 3142#",
+  "",
+  "%%IMG_ENTRANCE%%",
+  "%%IMG_DIALER%%",
+  "",
+  "Key box: inside the building, on the right-hand side after entering through the main entrance.",
+  "Box no.: 1 · Code: 1421#",
+  "Inside: apartment key.",
+  "Please close the box after taking the key and do not use it for storage during your stay.",
+  "",
+  "%%IMG_KEY_BOX%%",
+  "",
+  "Apartment: 202, 2nd floor.",
+  "",
+  "The step-by-step guide with photos is available in the Chill Concierge App.",
+  "",
+  "### Check-out & Luggage",
+  "",
+  "Check-out: by 11:00 AM.",
+  "Please make sure to leave the apartment no later than 11:00.",
+  "We are fully booked most days, with new guests arriving early,",
+  "so unfortunately late check-out is not possible.",
+  "",
+  "Please drop your key into the white mailbox in the ground floor hallway, across from the elevator, on the left-hand side after entering the main entrance.",
+  "",
+  "%%IMG_CHECKOUT_BOX%%",
+  "",
+  "You can still use the luggage room after check-out if needed.",
+  "Full instructions with photos are available in the Concierge app above.",
+].join("\n");
 
 /** ====== WIFI ====== */
 const wifiByRoom = (room)=> WIFI.find(w=>w.room===room)||null;
@@ -217,6 +261,7 @@ function buildWifiCreds(entry, uiLang) {
 function injectStayImages(stayRaw) {
   const reps = {
     "%%IMG_ENTRANCE%%": `![](${IMG(P.ENTRANCE)})`,
+    "%%IMG_DIALER%%": `![](${IMG(P.DIALER)})`,
     "%%IMG_LUGGAGE%%": `![](${IMG(P.LUGGAGE)})`,
     "%%IMG_KEY_BOX%%": `![](${IMG(P.KEY_BOX)})`,
     "%%IMG_MAIN_ENTRANCE%%": `![](${IMG(P.MAIN_ENTRANCE)})`,
@@ -336,7 +381,7 @@ function buildSafe(uiLang) {
 }
 
 function buildStayInstructions(uiLang) {
-  return injectStayImages(getContentPack(uiLang).stayRaw);
+  return injectStayImages(STAY_INSTRUCTIONS_RAW);
 }
 
 function buildTransport(uiLang) {
