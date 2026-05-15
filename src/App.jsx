@@ -691,19 +691,22 @@ const AppStyles = () => (
     .searchInputRow{
       display:flex;align-items:center;gap:10px;
       padding:4px 4px 4px 14px;border-radius:var(--radius-btn);
-      border:1px solid var(--border);background:var(--surface-2);
-      transition:border-color .2s ease, box-shadow .2s ease;
+      border:2px solid color-mix(in oklab,var(--accent),transparent 44%);
+      background:linear-gradient(180deg,#ffffff,#eef7f5);
+      box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 2px 10px rgba(13,148,136,.08);
+      transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
     .searchWrap:focus-within .searchInputRow{
-      border-color:rgba(20,184,166,.45);
-      box-shadow:0 0 0 4px var(--glow);background:#fff;
+      border-color:color-mix(in oklab,var(--accent),black 8%);
+      box-shadow:0 0 0 4px color-mix(in oklab,var(--accent),transparent 78%),0 4px 14px rgba(13,148,136,.16);
+      background:#fff;
     }
-    .searchIcon{opacity:.45;font-size:1.1rem;flex-shrink:0}
+    .searchIcon{opacity:.72;font-size:1.16rem;flex-shrink:0;color:var(--accent-2)}
     .searchInput{
       flex:1;min-width:0;border:none;background:transparent;
       font:inherit;font-size:1rem;padding:12px 8px;outline:none;color:var(--ink);
     }
-    .searchInput::placeholder{color:var(--muted);opacity:.85}
+    .searchInput::placeholder{color:#4b5563;opacity:.92}
     .searchResults{
       position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:1200;
       max-height:min(52vh,360px);overflow:auto;margin:0;padding:6px;list-style:none;
@@ -1260,77 +1263,77 @@ const tr = {
 const searchI18n = {
   cs: {
     searchLabel: "Rychlé vyhledávání",
-    searchPlaceholder: "Co hledáte? (Wi‑Fi, snídaně, prádelna…)",
+    searchPlaceholder: "Co hledáte? (Wi‑Fi, klimatizace, prádelna...)",
     searchNoResults: "Zkuste jiná slova nebo vyberte téma níže.",
     searchHint: "Najdeme nejbližší položku v menu podle vašeho dotazu.",
     searchGo: "Otevřít",
   },
   en: {
     searchLabel: "Quick search",
-    searchPlaceholder: "What do you need? (Wi‑Fi, breakfast, laundry…)",
+    searchPlaceholder: "What do you need? (Wi‑Fi, air conditioning, laundry...)",
     searchNoResults: "Try different words or pick a topic below.",
     searchHint: "We match the closest menu option to what you type.",
     searchGo: "Open",
   },
   es: {
     searchLabel: "Búsqueda rápida",
-    searchPlaceholder: "¿Qué necesitas? (Wi‑Fi, desayuno, lavandería…)",
+    searchPlaceholder: "¿Qué necesita? (Wi‑Fi, aire acondicionado, lavandería...)",
     searchNoResults: "Prueba otras palabras o elige un tema abajo.",
     searchHint: "Mostramos la opción del menú más parecida a lo que escribes.",
     searchGo: "Abrir",
   },
   de: {
     searchLabel: "Schnellsuche",
-    searchPlaceholder: "Wonach suchst du? (WLAN, Frühstück, Wäscherei…)",
+    searchPlaceholder: "Was suchen Sie? (Wi‑Fi, Klimaanlage, Wäscheraum...)",
     searchNoResults: "Andere Wörter versuchen oder unten ein Thema wählen.",
     searchHint: "Wir finden den passendsten Menüpunkt zu deiner Eingabe.",
     searchGo: "Öffnen",
   },
   fr: {
     searchLabel: "Recherche rapide",
-    searchPlaceholder: "Que cherchez-vous ? (Wi‑Fi, petit-déj, laverie…)",
+    searchPlaceholder: "Que recherchez-vous ? (Wi‑Fi, climatisation, buanderie...)",
     searchNoResults: "Essayez d’autres mots ou choisissez un sujet ci-dessous.",
     searchHint: "Nous proposons l’entrée de menu la plus proche de votre texte.",
     searchGo: "Ouvrir",
   },
   ru: {
     searchLabel: "Быстрый поиск",
-    searchPlaceholder: "Что нужно? (Wi‑Fi, завтрак, прачечная…)",
+    searchPlaceholder: "Что вы ищете? (Wi‑Fi, кондиционер, прачечная...)",
     searchNoResults: "Попробуйте другие слова или выберите тему ниже.",
     searchHint: "Показываем ближайший пункт меню к вашему запросу.",
     searchGo: "Открыть",
   },
   uk: {
     searchLabel: "Швидкий пошук",
-    searchPlaceholder: "Що потрібно? (Wi‑Fi, сніданок, пральня…)",
+    searchPlaceholder: "Що ви шукаєте? (Wi‑Fi, кондиціонер, пральня...)",
     searchNoResults: "Спробуйте інші слова або оберіть тему нижче.",
     searchHint: "Показуємо найближчий пункт меню до вашого запиту.",
     searchGo: "Відкрити",
   },
   nl: {
     searchLabel: "Snel zoeken",
-    searchPlaceholder: "Waar ben je naar op zoek? (Wi‑Fi, ontbijt, wasserette…)",
+    searchPlaceholder: "Waar zoekt u naar? (Wi‑Fi, airconditioning, wasruimte...)",
     searchNoResults: "Probeer andere woorden of kies hieronder een onderwerp.",
     searchHint: "We tonen het dichtstbijzijnde menu-item bij je invoer.",
     searchGo: "Openen",
   },
   it: {
     searchLabel: "Ricerca veloce",
-    searchPlaceholder: "Di cosa hai bisogno? (Wi‑Fi, colazione, lavanderia…)",
+    searchPlaceholder: "Cosa cerca? (Wi‑Fi, aria condizionata, lavanderia...)",
     searchNoResults: "Prova altre parole o scegli un argomento qui sotto.",
     searchHint: "Troviamo la voce di menu più vicina a ciò che scrivi.",
     searchGo: "Apri",
   },
   da: {
     searchLabel: "Hurtigsøgning",
-    searchPlaceholder: "Hvad har du brug for? (Wi‑Fi, morgenmad, vaskeri…)",
+    searchPlaceholder: "Hvad søger du? (Wi‑Fi, aircondition, vaskeri...)",
     searchNoResults: "Prøv andre ord eller vælg et emne nedenfor.",
     searchHint: "Vi finder det menupunkt, der ligger tættest på det, du skriver.",
     searchGo: "Åbn",
   },
   pl: {
     searchLabel: "Szybkie wyszukiwanie",
-    searchPlaceholder: "Czego szukasz? (Wi‑Fi, śniadanie, pralnia…)",
+    searchPlaceholder: "Czego szukasz? (Wi‑Fi, klimatyzacja, pralnia...)",
     searchNoResults: "Spróbuj innych słów lub wybierz temat poniżej.",
     searchHint: "Pokazujemy najbliższą pozycję menu do Twojego zapytania.",
     searchGo: "Otwórz",
@@ -2111,7 +2114,7 @@ export default function App(){
   const breadcrumbSegments = useMemo(() => {
     if (!lang) return [];
     const h = tUx(lang, "breadcrumbHome");
-    if (stack.length === 0) return [h];
+    if (stack.length === 0) return [];
     return [h, ...stack.map((s) => s.label)];
   }, [lang, stack]);
 
@@ -2526,18 +2529,20 @@ export default function App(){
             role="region"
             aria-labelledby="shortcuts-heading"
           >
-            <nav className="breadcrumbNav" aria-label={tUx(lang, "ariaBreadcrumb")}>
-              {breadcrumbSegments.map((seg, i) => (
-                <span key={`${i}-${seg}`}>
-                  {i > 0 && (
-                    <span className="crumbSep" aria-hidden>
-                      ›
-                    </span>
-                  )}
-                  {seg}
-                </span>
-              ))}
-            </nav>
+            {breadcrumbSegments.length > 0 && (
+              <nav className="breadcrumbNav" aria-label={tUx(lang, "ariaBreadcrumb")}>
+                {breadcrumbSegments.map((seg, i) => (
+                  <span key={`${i}-${seg}`}>
+                    {i > 0 && (
+                      <span className="crumbSep" aria-hidden>
+                        ›
+                      </span>
+                    )}
+                    {seg}
+                  </span>
+                ))}
+              </nav>
+            )}
             <div className="shortcutsHeader">
               <strong id="shortcuts-heading">
                 {stack.length > 0
