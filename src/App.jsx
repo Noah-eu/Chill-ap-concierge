@@ -630,6 +630,36 @@ const AppStyles = () => (
     }
     .backBtn--danger:hover{filter:brightness(1.05)}
     .backBtn--danger:active{transform:scale(.98)}
+    .backBtn--language{
+      display:inline-flex;align-items:center;justify-content:center;
+      flex:1 1 190px;
+      max-width:100%;
+      min-height:52px;
+      padding:14px 20px;
+      border:1px solid color-mix(in oklab,#d97706,black 18%);
+      background:linear-gradient(165deg,#fde68a 0%,#fbbf24 45%,#f59e0b 100%);
+      color:#241400;
+      font-weight:800;
+      font-size:.88rem;
+      line-height:1.15;
+      text-align:center;
+      white-space:normal;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.48) inset,
+        0 3px 0 color-mix(in oklab,#b45309,black 14%),
+        0 10px 22px rgba(217,119,6,.28);
+    }
+    .backBtn--language:hover,.backBtn--language:focus-visible{
+      outline:none;
+      border-color:color-mix(in oklab,#b45309,black 12%);
+      filter:brightness(1.02);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.55) inset,
+        0 3px 0 color-mix(in oklab,#92400e,black 10%),
+        0 12px 26px rgba(217,119,6,.34),
+        0 0 0 3px rgba(251,191,36,.22);
+    }
+    .backBtn--language:active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in oklab,#92400e,black 10%),0 6px 16px rgba(217,119,6,.24)}
 
     .typingBubble{min-height:48px;display:flex;align-items:center}
     .typingDots{display:inline-flex;gap:7px;align-items:center;padding:2px 4px}
@@ -932,7 +962,7 @@ function topBarCopy(code) {
 }
 
 const tr = {
-  cs:{ chooseLang:"Zvolte jazyk", mainTitle:"Vyberte téma", subTitle:"Podtéma / Subtopic", back:"← Zpět",
+  cs:{ chooseLang:"🌍 Změnit jazyk", mainTitle:"Vyberte téma", subTitle:"Podtéma / Subtopic", back:"← Zpět",
        instructionsLabel:"📄 Instrukce k ubytování",
        catFood:"🍽️ Jídlo a okolí", catTech:"🔧 Technické potíže", catOther:"📋 Ostatní", catTransport:"🚌 Doprava", catAmenities:"🏨 Vybavení hotelu",
        tourLabel:"🧭 3D prohlídka hotelu", tourOpenMsg:"[Otevřít 3D prohlídku]("+MATTERPORT_URL+")",
@@ -958,7 +988,7 @@ const tr = {
        pickSsid:"Vyberte SSID", showMyWifi:"Zobrazit moje heslo",
        aRooms:"🛏️ Pokoje", aKitchen:"🍳 Kuchyň", aBathroom:"🛁 Koupelna", aService:"🧰 Prádelna, úschovna, odpadky" },
 
-  en:{ chooseLang:"Choose a language", mainTitle:"Pick a topic", subTitle:"Subtopic", back:"← Back",
+  en:{ chooseLang:"🌍 Choose language", mainTitle:"Pick a topic", subTitle:"Subtopic", back:"← Back",
        instructionsLabel:"📄 Check-in instructions",
        catFood:"🍽️ Food & Nearby", catTech:"🔧 Technical issues", catOther:"📋 Other", catTransport:"🚌 Transport", catAmenities:"🏨 Hotel amenities",
        tourLabel:"🧭 3D virtual tour", tourOpenMsg:"[Open the 3D tour]("+MATTERPORT_URL+")",
@@ -985,7 +1015,7 @@ const tr = {
        aRooms:"🛏️ Rooms", aKitchen:"🍳 Kitchen", aBathroom:"🛁 Bathroom", aService:"🧰 Laundry, luggage, trash" },
 
   // Další jazyky – UI bere přesně zvolený jazyk:
-  es:{ chooseLang:"Elige un idioma", mainTitle:"Elige un tema", subTitle:"Subtema", back:"← Atrás",
+  es:{ chooseLang:"🌍 Elegir idioma", mainTitle:"Elige un tema", subTitle:"Subtema", back:"← Atrás",
        instructionsLabel:"📄 Instrucciones de check-in",
        catFood:"🍽️ Comida y alrededores", catTech:"🔧 Problemas técnicos", catOther:"📋 Otros", catTransport:"🚌 Transporte", catAmenities:"🏨 Servicios del hotel",
        tourLabel:"🧭 Tour virtual 3D", tourOpenMsg:"[Abrir el tour 3D]("+MATTERPORT_URL+")",
@@ -1011,7 +1041,7 @@ const tr = {
        pickSsid:"Elige el SSID", showMyWifi:"Mostrar mi contraseña",
        aRooms:"🛏️ Habitaciones", aKitchen:"🍳 Cocina", aBathroom:"🛁 Baño", aService:"🧰 Lavandería, consigna, basura" },
 
-  de:{ chooseLang:"Sprache auswählen", mainTitle:"Thema wählen", subTitle:"Unterthema", back:"← Zurück",
+  de:{ chooseLang:"🌍 Sprache wählen", mainTitle:"Thema wählen", subTitle:"Unterthema", back:"← Zurück",
        instructionsLabel:"📄 Check-in-Anleitung",
        catFood:"🍽️ Essen & Umgebung", catTech:"🔧 Technische Probleme", catOther:"📋 Sonstiges", catTransport:"🚌 Transport", catAmenities:"🏨 Hotelausstattung",
        tourLabel:"🧭 3D-Rundgang", tourOpenMsg:"[3D-Rundgang öffnen]("+MATTERPORT_URL+")",
@@ -1037,7 +1067,7 @@ const tr = {
        pickSsid:"SSID auswählen", showMyWifi:"Mein Passwort anzeigen",
        aRooms:"🛏️ Zimmer", aKitchen:"🍳 Küche", aBathroom:"🛁 Badezimmer", aService:"🧰 Wäscherei, Gepäck, Müll" },
 
-  fr:{ chooseLang:"Choisissez la langue", mainTitle:"Choisissez un sujet", subTitle:"Sous-sujet", back:"← Retour",
+  fr:{ chooseLang:"🌍 Choisir la langue", mainTitle:"Choisissez un sujet", subTitle:"Sous-sujet", back:"← Retour",
        instructionsLabel:"📄 Instructions de check-in",
        catFood:"🍽️ Nourriture & alentours", catTech:"🔧 Problèmes techniques", catOther:"📋 Autres", catTransport:"🚌 Transport", catAmenities:"🏨 Services de l’hôtel",
        tourLabel:"🧭 Visite virtuelle 3D", tourOpenMsg:"[Ouvrir la visite 3D]("+MATTERPORT_URL+")",
@@ -1063,7 +1093,7 @@ const tr = {
        pickSsid:"Choisir le SSID", showMyWifi:"Afficher mon mot de passe",
        aRooms:"🛏️ Chambres", aKitchen:"🍳 Cuisine", aBathroom:"🛁 Salle de bain", aService:"🧰 Laverie, bagages, déchets" },
 
-  ru:{ chooseLang:"Выберите язык", mainTitle:"Выберите тему", subTitle:"Подтема", back:"← Назад",
+  ru:{ chooseLang:"🌍 Выбрать язык", mainTitle:"Выберите тему", subTitle:"Подтема", back:"← Назад",
        instructionsLabel:"📄 Инструкции по заселению",
        catFood:"🍽️ Еда и поблизости", catTech:"🔧 Технические вопросы", catOther:"📋 Другое", catTransport:"🚌 Транспорт", catAmenities:"🏨 Удобства отеля",
        tourLabel:"🧭 3D-тур по отелю", tourOpenMsg:"[Открыть 3D-тур]("+MATTERPORT_URL+")",
@@ -1089,7 +1119,7 @@ const tr = {
        pickSsid:"Выберите SSID", showMyWifi:"Показать мой пароль",
        aRooms:"🛏️ Комнаты", aKitchen:"🍳 Кухня", aBathroom:"🛁 Ванная", aService:"🧰 Прачечная, багаж, мусор" },
 
-  uk:{ chooseLang:"Оберіть мову", mainTitle:"Оберіть тему", subTitle:"Підтема", back:"← Назад",
+  uk:{ chooseLang:"🌍 Обрати мову", mainTitle:"Оберіть тему", subTitle:"Підтема", back:"← Назад",
        instructionsLabel:"📄 Інструкції поселення",
        catFood:"🍽️ Їжа та поруч", catTech:"🔧 Технічні питання", catOther:"📋 Інше", catTransport:"🚌 Транспорт", catAmenities:"🏨 Зручності готелю",
        tourLabel:"🧭 3D-тур готелем", tourOpenMsg:"[Відкрити 3D-тур]("+MATTERPORT_URL+")",
@@ -1115,7 +1145,7 @@ const tr = {
        pickSsid:"Оберіть SSID", showMyWifi:"Показати мій пароль",
        aRooms:"🛏️ Кімнати", aKitchen:"🍳 Кухня", aBathroom:"🛁 Ванна", aService:"🧰 Пральня, багаж, сміття" },
 
-  nl:{ chooseLang:"Kies een taal", mainTitle:"Kies een onderwerp", subTitle:"Subonderwerp", back:"← Terug",
+  nl:{ chooseLang:"🌍 Taal kiezen", mainTitle:"Kies een onderwerp", subTitle:"Subonderwerp", back:"← Terug",
        instructionsLabel:"📄 Check-in instructies",
        catFood:"🍽️ Eten & in de buurt", catTech:"🔧 Technische problemen", catOther:"📋 Overig", catTransport:"🚌 Vervoer", catAmenities:"🏨 Hotelfaciliteiten",
        tourLabel:"🧭 3D-tour", tourOpenMsg:"[3D-tour openen]("+MATTERPORT_URL+")",
@@ -1141,7 +1171,7 @@ const tr = {
        pickSsid:"Kies de SSID", showMyWifi:"Mijn wachtwoord tonen",
        aRooms:"🛏️ Kamers", aKitchen:"🍳 Keuken", aBathroom:"🛁 Badkamer", aService:"🧰 Wasserij, bagage, afval" },
 
-  it:{ chooseLang:"Scegli la lingua", mainTitle:"Scegli un argomento", subTitle:"Sottoargomento", back:"← Indietro",
+  it:{ chooseLang:"🌍 Scegli lingua", mainTitle:"Scegli un argomento", subTitle:"Sottoargomento", back:"← Indietro",
        instructionsLabel:"📄 Istruzioni di check-in",
        catFood:"🍽️ Cibo e dintorni", catTech:"🔧 Problemi tecnici", catOther:"📋 Altro", catTransport:"🚌 Trasporti", catAmenities:"🏨 Servizi dell’hotel",
        tourLabel:"🧭 Tour 3D", tourOpenMsg:"[Apri il tour 3D]("+MATTERPORT_URL+")",
@@ -1167,7 +1197,7 @@ const tr = {
        pickSsid:"Scegli l’SSID", showMyWifi:"Mostra la mia password",
        aRooms:"🛏️ Camere", aKitchen:"🍳 Cucina", aBathroom:"🛁 Bagno", aService:"🧰 Lavanderia, deposito, rifiuti" },
 
-  da:{ chooseLang:"Vælg sprog", mainTitle:"Vælg et emne", subTitle:"Underemne", back:"← Tilbage",
+  da:{ chooseLang:"🌍 Vælg sprog", mainTitle:"Vælg et emne", subTitle:"Underemne", back:"← Tilbage",
        instructionsLabel:"📄 Check-in instruktioner",
        catFood:"🍽️ Mad og nærområde", catTech:"🔧 Tekniske problemer", catOther:"📋 Andet", catTransport:"🚌 Transport", catAmenities:"🏨 Hotelfaciliteter",
        tourLabel:"🧭 3D-rundtur", tourOpenMsg:"[Åbn 3D-rundturen]("+MATTERPORT_URL+")",
@@ -1193,7 +1223,7 @@ const tr = {
        pickSsid:"Vælg SSID", showMyWifi:"Vis min adgangskode",
        aRooms:"🛏️ Værelser", aKitchen:"🍳 Køkken", aBathroom:"🛁 Badeværelse", aService:"🧰 Vaskeri, bagage, affald" },
 
-  pl:{ chooseLang:"Wybierz język", mainTitle:"Wybierz temat", subTitle:"Podtemat", back:"← Wstecz",
+  pl:{ chooseLang:"🌍 Zmień język", mainTitle:"Wybierz temat", subTitle:"Podtemat", back:"← Wstecz",
        instructionsLabel:"📄 Instrukcje zameldowania",
        catFood:"🍽️ Jedzenie i okolica", catTech:"🔧 Problemy techniczne", catOther:"📋 Inne", catTransport:"🚌 Transport", catAmenities:"🏨 Udogodnienia hotelu",
        tourLabel:"🧭 Wirtualna wycieczka 3D", tourOpenMsg:"[Otwórz wycieczkę 3D]("+MATTERPORT_URL+")",
@@ -2536,7 +2566,7 @@ export default function App(){
                 </button>
                 <button
                   type="button"
-                  className="backBtn backBtn--teal"
+                  className="backBtn backBtn--language"
                   onClick={() => {
                     lastTouchedNidRef.current = null;
                     setLang(null);
@@ -2549,7 +2579,7 @@ export default function App(){
                     });
                   }}
                 >
-                  🌐 {t(lang || "cs","chooseLang")}
+                  {t(lang || "cs","chooseLang")}
                 </button>
               </div>
             </div>
