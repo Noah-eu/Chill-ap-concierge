@@ -49,7 +49,7 @@ const CS = {
     "**Check-out je do 11:00** (přijíždějí noví hosté).",
     "Nejprve prosím **vhoďte klíče do check-out boxu**.",
     "Potom můžete **po 11:00** uložit zavazadla v **úschovně batožiny** – je v průjezdu **vedle schránky na klíče**.",
-    "**Kód na číselníku u vchodu do průchodu je 3142#.** Po uložení prosím **zkontrolujte, že jsou dveře zavřené**.",
+    "**Kód na číselníku u vchodu do průchodu jsme vám poslali v příjezdových instrukcích.** Po uložení prosím **zkontrolujte, že jsou dveře zavřené**.",
   ],
 
   key: [
@@ -107,7 +107,7 @@ const CS = {
     "### Check-in & klíče",
     "%%IMG_ENTRANCE%%",
     "**Check-in:** od **14:00** (dříve, pokud je apartmán připraven).",
-    "Pokud přijedete **před 11:00**, využijte prosím **úschovnu zavazadel** vedle schránek na klíče. Kód **3142#**.",
+    "Pokud přijedete **před 11:00**, využijte prosím **úschovnu zavazadel** vedle schránek na klíče. Kód jsme vám poslali v příjezdových instrukcích.",
     "%%IMG_LUGGAGE%%",
     "",
     "**Po 11:00:**",
@@ -227,7 +227,7 @@ const EN = {
     "**Check-out is by 11:00** (new guests are arriving).",
     "Please **drop your keys in the check-out box** first.",
     "After **11:00** you can store luggage in the **luggage room** — it's in the passage **next to the key boxes**.",
-    "**The keypad code for the passage entrance is 3142#.** After storing your bags, please **make sure the door is closed**.",
+    "**The keypad code for the passage entrance was sent to you in your arrival instructions.** After storing your bags, please **make sure the door is closed**.",
   ],
 
   key: [
@@ -284,7 +284,7 @@ const EN = {
     "### Check-in & keys",
     "%%IMG_ENTRANCE%%",
     "**Check-in:** from **14:00** (earlier if the apartment is ready).",
-    "If you arrive **before 11:00**, please use the **luggage storage** next to the key boxes. Code **3142#**.",
+    "If you arrive **before 11:00**, please use the **luggage storage** next to the key boxes. The code was sent to you in your arrival instructions.",
     "%%IMG_LUGGAGE%%",
     "",
     "**After 11:00:**",
